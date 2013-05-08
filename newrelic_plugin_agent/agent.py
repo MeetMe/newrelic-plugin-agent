@@ -12,7 +12,7 @@ import Queue as queue
 import threading
 import time
 
-__version__ = '0.1.0'
+__version__ = '1.0.0'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +43,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         self.http_headers = {'Accept': 'application/json',
                              'Content-Type': 'application/json',
                              'X-License-Key': self.license_key}
+        self.derive_last_interval = dict()
 
     @property
     def agent_data(self):
@@ -64,7 +65,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         """
         return self.application_config['license_key']
 
-    def poll_plugin(self, plugin, config):
+    def poll_plugin(self, plugin_name, plugin, config):
         """Kick off a background thread to run the processing task.
 
         :param newrelic_plugin_agent.plugins.base.Plugin plugin: The plugin
@@ -74,6 +75,7 @@ class NewRelicPluginAgent(clihelper.Controller):
 
         thread = threading.Thread(target=self.thread_process,
                                   kwargs={'config': config,
+                                          'name': plugin_name,
                                           'plugin': plugin,
                                           'poll_interval': self._wake_interval})
         thread.run()
@@ -101,7 +103,8 @@ class NewRelicPluginAgent(clihelper.Controller):
         metrics = 0
         components = list()
         while self.publish_queue.qsize():
-            data = self.publish_queue.get()
+            (name, data, last_values) = self.publish_queue.get()
+            self.derive_last_interval[name] = last_values
             if isinstance(data, list):
                 for component in data:
                     metrics += len(component['metrics'].keys())
@@ -131,9 +134,9 @@ class NewRelicPluginAgent(clihelper.Controller):
             response = requests.post(self.PLATFORM_URL,
                                      headers=self.http_headers,
                                      data=json.dumps(body, ensure_ascii=False))
-            LOGGER.info('Response: %s: %r',
-                        response.status_code,
-                        response.content.strip())
+            LOGGER.debug('Response: %s: %r',
+                         response.status_code,
+                         response.content.strip())
         except requests.ConnectionError as error:
             LOGGER.error('Error reporting stats: %s', error)
 
@@ -150,25 +153,25 @@ class NewRelicPluginAgent(clihelper.Controller):
             if plugin == 'couchdb':
                 if 'couchdb' not in globals():
                     from newrelic_plugin_agent.plugins import couchdb
-                self.poll_plugin(couchdb.CouchDB,
+                self.poll_plugin(plugin, couchdb.CouchDB,
                                  self.application_config.get(plugin))
 
             elif plugin == 'memcached':
                 if 'memcached' not in globals():
                     from newrelic_plugin_agent.plugins import memcached
-                self.poll_plugin(memcached.Memcached,
+                self.poll_plugin(plugin, memcached.Memcached,
                                  self.application_config.get(plugin))
 
             elif plugin == 'rabbitmq':
                 if 'rabbitmq' not in globals():
                     from newrelic_plugin_agent.plugins import rabbitmq
-                self.poll_plugin(rabbitmq.RabbitMQ,
+                self.poll_plugin(plugin, rabbitmq.RabbitMQ,
                                  self.application_config.get(plugin))
 
             elif plugin == 'redis':
                 if 'redis' not in globals():
                     from newrelic_plugin_agent.plugins import redis
-                self.poll_plugin(redis.Redis,
+                self.poll_plugin(plugin, redis.Redis,
                                  self.application_config.get(plugin))
 
     @property
@@ -178,11 +181,11 @@ class NewRelicPluginAgent(clihelper.Controller):
                 return True
         return False
 
-    def thread_process(self, plugin, config, poll_interval):
-        obj = plugin(config, poll_interval)
+    def thread_process(self, name, plugin, config, poll_interval):
+        LOGGER.debug('Polling %s, %r, %r, %r', name, plugin, config, poll_interval)
+        obj = plugin(config, poll_interval, self.derive_last_interval.get(name))
         obj.poll()
-        values = obj.values()
-        self.publish_queue.put(values)
+        self.publish_queue.put((name, obj.values(), obj.derive_last_interval))
 
     @property
     def wake_interval(self):

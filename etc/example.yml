@@ -4,10 +4,10 @@ Application:
   license_key: VALUE
   poll_interval: 60
 
-  couchdb:
-    name: localhost
-    host: localhost
-    port: 5984
+  #couchdb:
+  #  name: localhost
+  #  host: localhost
+  #  port: 5984
 
   memcached:
     name: localhost

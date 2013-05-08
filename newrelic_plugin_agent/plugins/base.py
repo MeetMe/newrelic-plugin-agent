@@ -13,11 +13,11 @@ class Plugin(object):
     GUID = 'com.meetme.newrelic_plugin_agent'
     MAX_VAL = 2147483647
 
-    def __init__(self, config, poll_interval):
+    def __init__(self, config, poll_interval, last_interval_values=None):
         self.poll_interval = poll_interval
         self.config = config
         self.derive = dict()
-        self.derive_last_interval = dict()
+        self.derive_last_interval = last_interval_values or dict()
         self.gauge = dict()
         self.rate = dict()
 
@@ -119,11 +119,15 @@ class Plugin(object):
         if isinstance(value, basestring):
             value = 0
 
+        sum_of_squares = int(squares or (value * value))
+        if sum_of_squares > self.MAX_VAL:
+            sum_of_squares = 0
+
         return {'min': min_value or value,
                 'max': max_value or value,
                 'total': value,
                 'count': count or 1,
-                'sum_of_squares': int(squares or (value * value))}
+                'sum_of_squares': sum_of_squares}
 
     @property
     def name(self):
