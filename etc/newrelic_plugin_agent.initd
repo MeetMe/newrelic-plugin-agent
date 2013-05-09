@@ -15,7 +15,7 @@ APP="/usr/bin/newrelic_plugin_agent"
 CONFIG_DIR="/etc"
 
 # PID File
-PID_FILE="/var/run/newrelic/newrelic_plugin_agent.pid"
+PID_FILE="/var/run/newrelic_plugin_agent.pid"
 
 # Additional arguments
 OPTS=""

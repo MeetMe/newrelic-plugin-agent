@@ -193,6 +193,12 @@ class NewRelicPluginAgent(clihelper.Controller):
 
         for plugin in plugins:
 
+            if plugin == 'apache_httpd':
+                if 'apache_httpd' not in globals():
+                    from newrelic_plugin_agent.plugins import apache_httpd
+                self.poll_plugin(plugin, apache_httpd.ApacheHTTPD,
+                                 self.application_config.get(plugin))
+
             if plugin == 'couchdb':
                 if 'couchdb' not in globals():
                     from newrelic_plugin_agent.plugins import couchdb

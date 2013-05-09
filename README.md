@@ -4,6 +4,7 @@ newrelic_plugin_agent
 Agent that polls supported backend systems and submits the results to the
 NewRelic platform. Currently supported backend systems are:
 
+- Apache HTTP Server
 - CouchDB
 - Memcached
 - Nginx
@@ -35,6 +36,12 @@ Configuration Example
     Application:
       license_key: VALUE
       poll_interval: 60
+
+      apache_httpd:
+        name: hostname
+        host: localhost
+        port: 80
+        path: /server-status
 
       couchdb:
         name: localhost

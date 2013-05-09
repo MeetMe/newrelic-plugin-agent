@@ -4,6 +4,12 @@ Application:
   license_key: VALUE
   poll_interval: 60
 
+  apache_httpd:
+    name: hostname
+    host: localhost
+    port: 80
+    path: /server-status
+
   #couchdb:
   #  name: localhost
   #  host: localhost
@@ -14,11 +20,11 @@ Application:
   #  host: localhost
   #  port: 11211
 
-  nginx:
-    name: hostname
-    host: localhost
-    port: 80
-    path: /nginx_stub_status
+  #nginx:
+  #  name: hostname
+  #  host: localhost
+  #  port: 80
+  #  path: /nginx_stub_status
 
   #rabbitmq:
   #  name: rabbitmq@localhost
