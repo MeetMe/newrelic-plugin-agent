@@ -21,7 +21,7 @@ class Plugin(object):
         self.gauge = dict()
         self.rate = dict()
 
-    def add_derive_value(self, metric_name, units, value):
+    def add_derive_value(self, metric_name, units, value, count=None):
         """Add a value that will derive the current value from the difference
         between the last interval value and the current value.
 
@@ -39,12 +39,11 @@ class Plugin(object):
         metric = self.metric_name(metric_name, units)
         if metric not in self.derive_last_interval.keys():
             LOGGER.debug('Bypassing initial metric value for first run')
-            self.derive[metric] = self.metric_payload(0)
+            self.derive[metric] = self.metric_payload(0, count=0)
         else:
             cval = value - self.derive_last_interval[metric]
-            self.derive[metric] = self.metric_payload(cval)
+            self.derive[metric] = self.metric_payload(cval, count=count)
         self.derive_last_interval[metric] = value
-        LOGGER.debug('%s: %r %r', metric, self.derive[metric], value)
 
     def add_gauge_value(self, metric_name, units, value,
                         min_val=None, max_val=None, count=None,
@@ -64,7 +63,6 @@ class Plugin(object):
                                                  max_val,
                                                  count,
                                                  sum_of_squares)
-        LOGGER.debug('%s: %r', metric, self.gauge[metric])
 
     def component_data(self):
         """Create the component section of the NewRelic Platform data payload
@@ -113,9 +111,6 @@ class Plugin(object):
         :rtype: dict
 
         """
-        if min_value is not None and min_value > max_value or 0:
-            min_value = 0
-
         if isinstance(value, basestring):
             value = 0
 
@@ -123,8 +118,8 @@ class Plugin(object):
         if sum_of_squares > self.MAX_VAL:
             sum_of_squares = 0
 
-        return {'min': min_value or value,
-                'max': max_value or value,
+        return {'min': min_value,
+                'max': max_value,
                 'total': value,
                 'count': count or 1,
                 'sum_of_squares': sum_of_squares}

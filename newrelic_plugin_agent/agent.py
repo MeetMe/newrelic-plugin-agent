@@ -44,6 +44,7 @@ class NewRelicPluginAgent(clihelper.Controller):
                              'Content-Type': 'application/json',
                              'X-License-Key': self.license_key}
         self.derive_last_interval = dict()
+        self.min_max_values = dict()
 
     @property
     def agent_data(self):
@@ -96,8 +97,45 @@ class NewRelicPluginAgent(clihelper.Controller):
         self.send_data_to_newrelic()
         duration = time.time() - start_time
         self.next_wake_interval = self._wake_interval - duration
+        if self.next_wake_interval < 0:
+            LOGGER.warning('Poll interval took greater than %i seconds',
+                           self._wake_interval)
+            self.next_wake_interval = self._wake_interval
+
+
         LOGGER.info('All stats processed in %.2f seconds, next wake in %.2f',
                     duration, self.next_wake_interval)
+
+    def process_min_max_values(self, component):
+
+        guid = component['guid']
+        name = component['name']
+
+        if guid not in self.min_max_values.keys():
+            self.min_max_values[guid] = dict()
+
+        if name not in self.min_max_values[guid].keys():
+            self.min_max_values[guid][name] = dict()
+
+        for metric in component['metrics']:
+
+            min_val, max_val = self.min_max_values[guid][name].get(metric,
+                                                                   (None, None))
+            value = component['metrics'][metric]['total']
+
+            if min_val is not None and min_val > value:
+                min_val = value
+
+            if max_val is None or max_val < value:
+                max_val = value
+
+            if component['metrics'][metric]['min'] is None:
+                component['metrics'][metric]['min'] = min_val or value
+
+            if component['metrics'][metric]['max'] is None:
+                component['metrics'][metric]['max'] = max_val
+
+            self.min_max_values[guid][name][metric] = min_val, max_val
 
     def send_data_to_newrelic(self):
         metrics = 0
@@ -107,7 +145,10 @@ class NewRelicPluginAgent(clihelper.Controller):
             self.derive_last_interval[name] = last_values
             if isinstance(data, list):
                 for component in data:
+                    self.process_min_max_values(component)
                     metrics += len(component['metrics'].keys())
+
+
                     if metrics >= self.MAX_METRICS_PER_REQUEST:
                         self.send_components(components, metrics)
                         components = list()
@@ -115,6 +156,7 @@ class NewRelicPluginAgent(clihelper.Controller):
                     components.append(component)
             elif isinstance(data, dict):
                 metrics += len(data['metrics'].keys())
+                self.process_min_max_values(data)
                 if metrics >= self.MAX_METRICS_PER_REQUEST:
                     self.send_components(components, metrics)
                     components = list()
@@ -130,6 +172,7 @@ class NewRelicPluginAgent(clihelper.Controller):
 
         LOGGER.info('Sending %i metrics to NewRelic', metrics)
         body = {'agent': self.agent_data, 'components': components}
+
         try:
             response = requests.post(self.PLATFORM_URL,
                                      headers=self.http_headers,
@@ -182,7 +225,8 @@ class NewRelicPluginAgent(clihelper.Controller):
         return False
 
     def thread_process(self, name, plugin, config, poll_interval):
-        LOGGER.debug('Polling %s, %r, %r, %r', name, plugin, config, poll_interval)
+        LOGGER.debug('Polling %s, %r, %r, %r',
+                     name, plugin, config, poll_interval)
         obj = plugin(config, poll_interval, self.derive_last_interval.get(name))
         obj.poll()
         self.publish_queue.put((name, obj.values(), obj.derive_last_interval))

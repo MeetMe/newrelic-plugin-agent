@@ -18,12 +18,11 @@ class RabbitMQ(base.Plugin):
     DEFAULT_USER = 'guest'
     DEFAULT_PASSWORD = 'guest'
 
-    DELIVER_KEYS = ['deliver', 'deliver_get', 'deliver_no_ack']
-
     DUMMY_STATS = {'ack': 0,
                    'deliver': 0,
-                   'deliver_get': 0,
                    'deliver_no_ack': 0,
+                   'get': 0,
+                   'get_no_ack': 0,
                    'publish': 0,
                    'redeliver': 0}
 
@@ -96,15 +95,11 @@ class RabbitMQ(base.Plugin):
         # Top level message stats
         keys = self.DUMMY_STATS.keys()
         count, total, min_val, max_val, values = self.initialize_counters(keys)
+
         for channel in channel_data:
             if channel['node'].split('@')[-1] == node:
                 for key in keys:
                     total[key] += channel.get(key, 0)
-        for key in keys:
-            name = key.split('_')[-1].title()
-            self.add_derive_value('%s/%s' % (base_name, name),
-                                  'Messages',
-                                  total[key])
 
         # Per-Channel message Rates
         count, total, min_val, max_val, values = self.initialize_counters(keys)
@@ -120,13 +115,23 @@ class RabbitMQ(base.Plugin):
                 total[key] += stat_block.get(key, 0)
 
         for key in keys:
-            if key != 'deliver_no_ack':
-                temp = key.split('_')[-1].title()
-                name = '%sed' % temp if temp != 'Get' else temp
-            else:
-                name = 'Delivered NoAck'
-            if name == 'Acked':
+            name = key
+            if key == 'ack':
                 name = 'Acknowledged'
+            elif key == 'deliver':
+                name = 'Delivered'
+            elif key == 'deliver_get':
+                name = 'Delivered (Total)'
+            elif key == 'deliver_no_ack':
+                name = 'Delivered No-Ack'
+            elif key == 'get':
+                name = 'Got'
+            elif key == 'get_no_ack':
+                name = 'Got No-Ack'
+            elif key == 'publish':
+                name = 'Published'
+            elif key == 'redeliver':
+                name = 'Redelivered'
             self.add_derive_value('%s/%s' % (base_name, name),
                                   'Messages',
                                   total[key])
@@ -163,10 +168,6 @@ class RabbitMQ(base.Plugin):
                     value = queue.get(key, 0)
                     total[key] += value
                     values[key].append(value)
-                    if value < min_val[key]:
-                        min_val[key] = value
-                    if value > max_val[key]:
-                        max_val[key] = value
 
                 # Inventing a new key here, so it's a manual override
                 key = 'idle_consumers'
@@ -174,16 +175,13 @@ class RabbitMQ(base.Plugin):
                 idle_count = total['consumers'] - total['active_consumers']
                 total[key] += idle_count
                 values[key].append(idle_count)
-                if idle_count < min_val[key]:
-                    min_val[key] = idle_count
-                if idle_count > max_val[key]:
-                    max_val[key] = idle_count
+
 
         base_name = 'Node/%s/Consumers' % node
         self.add_gauge_value('%s/Count' % base_name, 'Consumers',
                              total['consumers'],
-                             min_val['consumers'],
-                             max_val['consumers'],
+                             None,
+                             None,
                              count['consumers'],
                              self.sum_of_squares(values['consumers']))
 
@@ -191,16 +189,16 @@ class RabbitMQ(base.Plugin):
 
         self.add_gauge_value('%s/Active' % base_name, 'Consumers',
                              total['active_consumers'],
-                             min_val['active_consumers'],
-                             max_val['active_consumers'],
+                             None,
+                             None,
                              count['active_consumers'],
                              self.sum_of_squares(values['active_consumers']))
 
         base_name = 'Node/%s/Consumers' % node
         self.add_gauge_value('%s/Idle' % base_name, 'Consumers',
                              total['idle_consumers'],
-                             min_val['idle_consumers'],
-                             max_val['idle_consumers'],
+                             None,
+                             None,
                              count['idle_consumers'],
                              self.sum_of_squares(values['idle_consumers']))
 
@@ -210,50 +208,54 @@ class RabbitMQ(base.Plugin):
         :param list queue_data: The raw queue data list
 
         """
-        available, deliver, publish = 0, 0, 0
+        available, deliver, publish, redeliver, unacked = 0, 0, 0, 0, 0
+        count = 0
         for queue in queue_data:
-            message_stats = queue.get('message_stats', list())
+            count += 1
+            message_stats = queue.get('message_stats', dict())
             if not message_stats:
                 message_stats = self.DUMMY_STATS
 
             vhost = 'Default' if queue['vhost'] == '/' else queue['vhost']
             base_name = 'Queue/%s/%s/Messages' % (vhost, queue['name'])
             self.add_derive_value('%s/Acknowledged' % base_name, 'Messages',
-                                  queue.get('ack', 0))
-            self.add_derive_value('%s/Available' % base_name, 'Messages',
-                                  message_stats.get('messages_ready', 0))
+                                  message_stats.get('ack', 0))
+            self.add_gauge_value('%s/Available' % base_name, 'Messages',
+                                 queue.get('messages_ready', 0))
+            self.add_derive_value('%s/Delivered (All)' % base_name, 'Messages',
+                                  message_stats.get('deliver_get', 0))
             self.add_derive_value('%s/Delivered' % base_name, 'Messages',
-                                  self.delivered_messages(message_stats))
+                                  message_stats.get('deliver', 0))
+            self.add_derive_value('%s/Delivered No-Ack' % base_name, 'Messages',
+                                  message_stats.get('deliver_no_ack', 0))
+            self.add_derive_value('%s/Got' % base_name, 'Messages',
+                                  message_stats.get('get', 0))
+            self.add_derive_value('%s/Got No-Ack' % base_name, 'Messages',
+                                  message_stats.get('get_no_ack', 0))
             self.add_derive_value('%s/Published' % base_name, 'Messages',
                                   message_stats.get('publish', 0))
             self.add_derive_value('%s/Redelivered' % base_name, 'Messages',
-                                  message_stats.get('ack', 0))
-            self.add_derive_value('%s/Unacknowledged' % base_name, 'Messages',
-                                  queue.get('ack', 0))
-            available += message_stats.get('messages_ready', 0)
-            deliver += message_stats.get('deliver', 0)
+                                  message_stats.get('redeliver', 0))
+            self.add_gauge_value('%s/Unacknowledged' % base_name, 'Messages',
+                                 queue.get('messages_unacknowledged', 0))
+
+            available += queue.get('messages_ready', 0)
+            deliver += message_stats.get('deliver_get', 0)
             publish += message_stats.get('publish', 0)
+            redeliver += message_stats.get('redeliver', 0)
+            unacked += queue.get('messages_unacknowledged', 0)
 
         # Summary stats
-        self.add_derive_value('Summary/Messages/Available', 'Messages',
-                              available)
+        self.add_gauge_value('Summary/Messages/Available', 'Messages',
+                             available, count=count)
         self.add_derive_value('Summary/Messages/Delivered', 'Messages',
-                              deliver)
+                              deliver, count=count)
         self.add_derive_value('Summary/Messages/Published', 'Messages',
-                              publish)
-
-    def delivered_messages(self, message_stats):
-        """Count the message delivery stats for the given dict and the
-        delivery keys combining all.
-
-        :param dict message_stats: The per-queue message stats
-        :rtype: int
-
-        """
-        count = 0
-        for key in self.DELIVER_KEYS:
-            count += message_stats.get(key, 0)
-        return count
+                              publish, count=count)
+        self.add_derive_value('Summary/Messages/Redelivered', 'Messages',
+                              redeliver, count=count)
+        self.add_gauge_value('Summary/Messages/Unacknowledged', 'Messages',
+                             unacked, count=count)
 
     def http_get(self, url):
         """Make a HTTP request for the URL.
