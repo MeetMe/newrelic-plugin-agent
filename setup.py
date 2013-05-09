@@ -24,7 +24,7 @@ install_requires = ['clihelper>=1.7.0', 'requests']
 tests_require = []
 
 setup(name='newrelic_plugin_agent',
-      version='1.0.1',
+      version='1.0.2',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic_plugin_agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],
@@ -32,5 +32,6 @@ setup(name='newrelic_plugin_agent',
       author_email='gmr@meetme.com',
       license='BSD',
       entry_points={'console_scripts': console_scripts},
+      data_files=[(key, data_files[key]) for key in data_files.keys()],
       install_requires=install_requires,
       tests_require=tests_require)

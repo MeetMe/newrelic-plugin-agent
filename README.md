@@ -6,13 +6,26 @@ NewRelic platform. Currently supported backend systems are:
 
 - CouchDB
 - Memcached
+- Nginx
 - RabbitMQ
 - Redis
+- Riak
 
 Installation Instructions
 -------------------------
+1. Unzip the archive
+2. In the archive directory:
 
+    python setup.py install
 
+3. Copy the configuration file example from /opt/newrelic_plugin_agent/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
+4. Run the app:
+
+    newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
+
+* - Where -f is to run it in the foreground instead of as a daemon.
+
+Sample configuration and init.d script are installed in /opt/newrelic_plugin_agent
 
 Configuration Example
 ---------------------
@@ -32,6 +45,12 @@ Configuration Example
         name: localhost
         host: localhost
         port: 11211
+
+      nginx:
+        name: hostname
+        host: localhost
+        port: 80
+        path: /nginx_stub_status
 
       rabbitmq:
         name: rabbitmq@localhost

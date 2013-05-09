@@ -14,6 +14,12 @@ Application:
   #  host: localhost
   #  port: 11211
 
+  nginx:
+    name: hostname
+    host: localhost
+    port: 80
+    path: /nginx_stub_status
+
   #rabbitmq:
   #  name: rabbitmq@localhost
   #  host: localhost

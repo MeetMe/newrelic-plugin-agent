@@ -12,7 +12,7 @@ import Queue as queue
 import threading
 import time
 
-__version__ = '1.0.1'
+from newrelic_plugin_agent import __version__
 
 LOGGER = logging.getLogger(__name__)
 
@@ -203,6 +203,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 if 'memcached' not in globals():
                     from newrelic_plugin_agent.plugins import memcached
                 self.poll_plugin(plugin, memcached.Memcached,
+                                 self.application_config.get(plugin))
+
+            elif plugin == 'nginx':
+                if 'nginx' not in globals():
+                    from newrelic_plugin_agent.plugins import nginx
+                self.poll_plugin(plugin, nginx.Nginx,
                                  self.application_config.get(plugin))
 
             elif plugin == 'rabbitmq':
