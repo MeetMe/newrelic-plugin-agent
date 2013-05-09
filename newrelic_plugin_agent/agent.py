@@ -12,7 +12,7 @@ import Queue as queue
 import threading
 import time
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -215,6 +215,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 if 'redis' not in globals():
                     from newrelic_plugin_agent.plugins import redis
                 self.poll_plugin(plugin, redis.Redis,
+                                 self.application_config.get(plugin))
+
+            elif plugin == 'riak':
+                if 'riak' not in globals():
+                    from newrelic_plugin_agent.plugins import riak
+                self.poll_plugin(plugin, riak.Riak,
                                  self.application_config.get(plugin))
 
     @property

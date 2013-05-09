@@ -46,6 +46,11 @@ Configuration Example
           port: 6379
           db_count: 16
 
+      riak:
+        name: localhost
+        host: localhost
+        port: 8098
+
     Daemon:
       pidfile: /var/run/newrelic_plugin_agent.pid
 

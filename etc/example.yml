@@ -9,23 +9,29 @@ Application:
   #  host: localhost
   #  port: 5984
 
-  memcached:
-    name: localhost
-    host: localhost
-    port: 11211
+  #memcached:
+  #  name: localhost
+  #  host: localhost
+  #  port: 11211
 
-  rabbitmq:
-    name: rabbitmq@localhost
-    host: localhost
-    port: 15672
-    username: guest
-    password: guest
+  #rabbitmq:
+  #  name: rabbitmq@localhost
+  #  host: localhost
+  #  port: 15672
+  #  username: guest
+  #  password: guest
 
-  redis:
-    - name: localhost
-      host: localhost
-      port: 6379
-      db_count: 16
+  #redis:
+  #  - name: localhost
+  #    host: localhost
+  #    port: 6379
+  #    db_count: 16
+
+  #riak:
+  #  name: localhost
+  #  host: node0.riak0.scs.mtmeprod.net
+  #  port: 8098
+
 
 Daemon:
   pidfile: /var/run/newrelic_plugin_agent.pid

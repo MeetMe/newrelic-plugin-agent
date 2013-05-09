@@ -2,7 +2,5 @@
 __init__.py
 
 """
-import logging
-
-LOGGER = logging.getLogger(__name__)
+__version__ = '1.0.1'
 
