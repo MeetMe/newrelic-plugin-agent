@@ -22,7 +22,7 @@ install_requires = ['clihelper>=1.7.0', 'requests']
 tests_require = []
 
 setup(name='newrelic_plugin_agent',
-      version='1.0.3',
+      version='1.0.4',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic_plugin_agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],
