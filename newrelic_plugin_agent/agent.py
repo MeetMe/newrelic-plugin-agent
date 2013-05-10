@@ -107,7 +107,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                     duration, self.next_wake_interval)
 
     def process_min_max_values(self, component):
+        """Agent keeps track of previous values, so compute the differences for
+        min/max values.
 
+        :param dict component: The component to calc min/max values for
+        
+        """
         guid = component['guid']
         name = component['name']
 
@@ -118,11 +123,9 @@ class NewRelicPluginAgent(clihelper.Controller):
             self.min_max_values[guid][name] = dict()
 
         for metric in component['metrics']:
-
             min_val, max_val = self.min_max_values[guid][name].get(metric,
                                                                    (None, None))
             value = component['metrics'][metric]['total']
-
             if min_val is not None and min_val > value:
                 min_val = value
 
@@ -147,8 +150,6 @@ class NewRelicPluginAgent(clihelper.Controller):
                 for component in data:
                     self.process_min_max_values(component)
                     metrics += len(component['metrics'].keys())
-
-
                     if metrics >= self.MAX_METRICS_PER_REQUEST:
                         self.send_components(components, metrics)
                         components = list()
@@ -169,7 +170,6 @@ class NewRelicPluginAgent(clihelper.Controller):
         JSON encoded POST body.
 
         """
-
         LOGGER.info('Sending %i metrics to NewRelic', metrics)
         body = {'agent': self.agent_data, 'components': components}
 
@@ -203,6 +203,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 if 'couchdb' not in globals():
                     from newrelic_plugin_agent.plugins import couchdb
                 self.poll_plugin(plugin, couchdb.CouchDB,
+                                 self.application_config.get(plugin))
+
+            elif plugin == 'edgecast':
+                if 'edgecast' not in globals():
+                    from newrelic_plugin_agent.plugins import edgecast
+                self.poll_plugin(plugin, edgecast.Edgecast,
                                  self.application_config.get(plugin))
 
             elif plugin == 'memcached':

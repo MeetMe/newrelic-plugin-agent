@@ -48,6 +48,11 @@ Configuration Example
         host: localhost
         port: 5984
 
+      edgecast:
+        name: My Edgecase Account
+        account: ACCOUNT_NUMBER
+        token: API_TOKEN
+
       memcached:
         name: localhost
         host: localhost

@@ -4,16 +4,21 @@ Application:
   license_key: VALUE
   poll_interval: 60
 
-  apache_httpd:
-    name: hostname
-    host: localhost
-    port: 80
-    path: /server-status
+  #apache_httpd:
+  #  name: hostname
+  #  host: localhost
+  #  port: 80
+  #  path: /server-status
 
   #couchdb:
   #  name: localhost
   #  host: localhost
   #  port: 5984
+
+  #edgecast:
+  #  name: My Edgecase Account
+  #  account: YOUR_ACCOUNT_#
+  #  token: YOUR_API_TOKEN
 
   #memcached:
   #  name: localhost
