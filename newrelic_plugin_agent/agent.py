@@ -111,7 +111,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         min/max values.
 
         :param dict component: The component to calc min/max values for
-        
+
         """
         guid = component['guid']
         name = component['name']

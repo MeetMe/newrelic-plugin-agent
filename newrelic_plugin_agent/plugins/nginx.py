@@ -31,6 +31,14 @@ class Nginx(base.Plugin):
             'writing': 'Connections/Writing',
             'waiting': 'Connections/Waiting'}
 
+    TYPES = {'connections': 'connections',
+            'accepts': 'requests',
+            'handled': 'requests',
+            'requests': 'requests',
+            'reading': 'connections',
+            'writing': 'connections',
+            'waiting': 'connections'}
+
     def add_datapoints(self, stats):
         """Add all of the data points for a node
 
@@ -45,9 +53,11 @@ class Nginx(base.Plugin):
                 except (IndexError, ValueError):
                     value = 0
                 if key in self.GAUGES:
-                    self.add_gauge_value(self.KEYS[key], 'count', value)
+                    self.add_gauge_value(self.KEYS[key], self.TYPES[key],
+                                         value)
                 else:
-                    self.add_derive_value(self.KEYS[key], 'count', value)
+                    self.add_derive_value(self.KEYS[key], self.TYPES[key],
+                                          value)
 
     @property
     def nginx_stats_url(self):

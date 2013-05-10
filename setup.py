@@ -18,8 +18,6 @@ with open('MANIFEST.in', 'w') as handle:
             handle.write('include %s\n' % filename)
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
-
-
 install_requires = ['clihelper>=1.7.0', 'requests']
 tests_require = []
 

@@ -45,7 +45,7 @@ class CouchDB(base.Plugin):
                              stats['open_os_files'].get('max', 0))
 
     def add_request_stats(self, couchdb_stats, httpd_stats):
-        self.add_derive_value('Requests/Processed', 'seconds',
+        self.add_derive_value('Requests/Processed', 'sec',
                               couchdb_stats['request_time'].get('current', 0))
         self.add_derive_value('Requests/Processed', 'requests',
                               httpd_stats['requests'].get('current', 0))

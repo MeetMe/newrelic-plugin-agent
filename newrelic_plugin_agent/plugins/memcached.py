@@ -55,28 +55,28 @@ class Memcached(base.Plugin):
         """
         self.add_derive_value('Bytes Sent', 'bytes', stats['bytes_written'])
         self.add_derive_value('Bytes Received', 'bytes', stats['bytes_read'])
-        self.add_gauge_value('Connection/Count', 'clients',
+        self.add_gauge_value('Connection/Count', 'connection',
                              stats['curr_connections'])
-        self.add_gauge_value('Connection/Structures', 'structs',
+        self.add_gauge_value('Connection/Structures', 'struct',
                              stats['connection_struct'])
-        self.add_derive_value('Connection/Yields', 'yields',
+        self.add_derive_value('Connection/Yields', 'yield',
                               stats['conn_yields'])
         self.add_derive_value('Evictions', 'keys', stats['evictions'])
         self.add_gauge_value('Items', 'keys', stats['curr_items'])
-        self.add_derive_value('Commands/CAS', 'hits', stats['cas_hits'])
-        self.add_derive_value('Commands/CAS', 'misses', stats['cas_misses'])
+        self.add_derive_value('Commands/CAS', 'hit', stats['cas_hits'])
+        self.add_derive_value('Commands/CAS', 'miss', stats['cas_misses'])
         self.add_derive_value('Commands/CAS', 'badval', stats['cas_badval'])
-        self.add_derive_value('Commands/Decr', 'hits', stats['decr_hits'])
-        self.add_derive_value('Commands/Decr', 'misses', stats['decr_misses'])
-        self.add_derive_value('Commands/Delete', 'hits', stats['delete_hits'])
-        self.add_derive_value('Commands/Delete', 'misses',
+        self.add_derive_value('Commands/Decr', 'hit', stats['decr_hits'])
+        self.add_derive_value('Commands/Decr', 'miss', stats['decr_misses'])
+        self.add_derive_value('Commands/Delete', 'hit', stats['delete_hits'])
+        self.add_derive_value('Commands/Delete', 'miss',
                               stats['delete_misses'])
         self.add_derive_value('Commands/Flush', 'requests', stats['cmd_flush'])
         self.add_derive_value('Commands/Get', 'requests', stats['cmd_get'])
-        self.add_derive_value('Commands/Get', 'hits', stats['get_hits'])
-        self.add_derive_value('Commands/Get', 'misses', stats['get_misses'])
-        self.add_derive_value('Commands/Incr', 'hits',  stats['incr_hits'])
-        self.add_derive_value('Commands/Incr', 'misses', stats['incr_misses'])
+        self.add_derive_value('Commands/Get', 'hit', stats['get_hits'])
+        self.add_derive_value('Commands/Get', 'miss', stats['get_misses'])
+        self.add_derive_value('Commands/Incr', 'hit',  stats['incr_hits'])
+        self.add_derive_value('Commands/Incr', 'miss', stats['incr_misses'])
         self.add_derive_value('Commands/Set', 'requests', stats['cmd_set'])
         self.add_derive_value('System/CPU/System', 'sec', stats['rusage_user'])
         self.add_derive_value('System/CPU/User', 'sec', stats['rusage_user'])
