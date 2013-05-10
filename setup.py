@@ -20,9 +20,10 @@ with open('MANIFEST.in', 'w') as handle:
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
 install_requires = ['clihelper>=1.7.0', 'requests']
 tests_require = []
+extras_require  = {'pgbouncer': ['psycopg2']}
 
 setup(name='newrelic_plugin_agent',
-      version='1.0.4',
+      version='1.0.5',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic_plugin_agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],
@@ -32,4 +33,5 @@ setup(name='newrelic_plugin_agent',
       entry_points={'console_scripts': console_scripts},
       data_files=[(key, data_files[key]) for key in data_files.keys()],
       install_requires=install_requires,
+      extras_require=extras_require,
       tests_require=tests_require)

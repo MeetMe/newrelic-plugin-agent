@@ -31,6 +31,11 @@ Application:
   #  port: 80
   #  path: /nginx_stub_status
 
+  # pgbouncer:
+  #   host: localhost
+  #   port: 6000
+  #   user: stats
+
   #rabbitmq:
   #  name: rabbitmq@localhost
   #  host: localhost

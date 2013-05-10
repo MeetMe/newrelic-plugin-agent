@@ -223,6 +223,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 self.poll_plugin(plugin, nginx.Nginx,
                                  self.application_config.get(plugin))
 
+            elif plugin == 'pgbouncer':
+                if 'pgbouncer' not in globals():
+                    from newrelic_plugin_agent.plugins import pgbouncer
+                self.poll_plugin(plugin, pgbouncer.PgBouncer,
+                                 self.application_config.get(plugin))
+
             elif plugin == 'rabbitmq':
                 if 'rabbitmq' not in globals():
                     from newrelic_plugin_agent.plugins import rabbitmq

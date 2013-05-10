@@ -9,6 +9,7 @@ NewRelic platform. Currently supported backend systems are:
 - Edgecast CDN "Realtime" API
 - Memcached
 - Nginx
+- pgBouncer
 - RabbitMQ
 - Redis
 - Riak
@@ -28,6 +29,16 @@ Installation Instructions
 * - Where -f is to run it in the foreground instead of as a daemon.
 
 Sample configuration and init.d script are installed in /opt/newrelic_plugin_agent
+
+Installing Additional Requirements
+----------------------------------
+
+To use the pgBouncer plugin you must install the psycopg2 library. To easily do
+this, make sure you have the latest version of pip installed (http://www.pip-installer.org/). This should be done after installing the agent itself.
+
+Once installed, from inside the source directory run the following command:
+
+    pip install -e .[pgbouncer]
 
 Configuration Example
 ---------------------
@@ -64,6 +75,11 @@ Configuration Example
         host: localhost
         port: 80
         path: /nginx_stub_status
+
+      pgbouncer:
+        host: localhost
+        port: 6000
+        user: stats
 
       rabbitmq:
         name: rabbitmq@localhost
