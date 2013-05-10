@@ -6,6 +6,7 @@ NewRelic platform. Currently supported backend systems are:
 
 - Apache HTTP Server
 - CouchDB
+- Edgecast CDN "Realtime" API
 - Memcached
 - Nginx
 - RabbitMQ
