@@ -21,7 +21,7 @@ Installation Instructions
 
     python setup.py install
 
-3. Copy the configuration file example from /opt/newrelic_plugin_agent/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
+3. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
 4. Run the app:
 
     newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
