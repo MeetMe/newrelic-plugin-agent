@@ -43,8 +43,8 @@ class Plugin(object):
         else:
             cval = value - self.derive_last_interval[metric]
             self.derive[metric] = self.metric_payload(cval, count=count)
-            LOGGER.debug('Last value: %r, Current value: %r, Report value: %r',
-                         self.derive_last_interval[metric], value,
+            LOGGER.debug('%s: Last: %r, Current: %r, Reportint: %r',
+                         metric, self.derive_last_interval[metric], value,
                          self.derive[metric])
         self.derive_last_interval[metric] = value
 
@@ -66,6 +66,7 @@ class Plugin(object):
                                                  max_val,
                                                  count,
                                                  sum_of_squares)
+        LOGGER.debug('%s: %r', metric_name, self.gauge[metric])
 
     def component_data(self):
         """Create the component section of the NewRelic Platform data payload
