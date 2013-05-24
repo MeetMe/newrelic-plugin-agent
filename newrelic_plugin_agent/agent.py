@@ -229,6 +229,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 self.poll_plugin(plugin, pgbouncer.PgBouncer,
                                  self.application_config.get(plugin))
 
+            elif plugin == 'postgresql':
+                if 'postgresql' not in globals():
+                    from newrelic_plugin_agent.plugins import postgresql
+                self.poll_plugin(plugin, postgresql.PostgreSQL,
+                                 self.application_config.get(plugin))
+
             elif plugin == 'rabbitmq':
                 if 'rabbitmq' not in globals():
                     from newrelic_plugin_agent.plugins import rabbitmq
