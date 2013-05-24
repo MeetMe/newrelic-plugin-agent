@@ -10,6 +10,7 @@ NewRelic platform. Currently supported backend systems are:
 - Memcached
 - Nginx
 - pgBouncer
+- PostgreSQL
 - RabbitMQ
 - Redis
 - Riak
@@ -80,6 +81,12 @@ Configuration Example
         host: localhost
         port: 6000
         user: stats
+
+      postgresql:
+        host: localhost
+        port: 5432
+        user: postgres
+        dbname: postgres
 
       rabbitmq:
         name: rabbitmq@localhost
