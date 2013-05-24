@@ -156,8 +156,8 @@ class NewRelicPluginAgent(clihelper.Controller):
                         metrics = 0
                     components.append(component)
             elif isinstance(data, dict):
-                metrics += len(data['metrics'].keys())
                 self.process_min_max_values(data)
+                metrics += len(data['metrics'].keys())
                 if metrics >= self.MAX_METRICS_PER_REQUEST:
                     self.send_components(components, metrics)
                     components = list()

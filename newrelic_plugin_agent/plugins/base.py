@@ -41,6 +41,9 @@ class Plugin(object):
             LOGGER.debug('Bypassing initial metric value for first run')
             self.derive[metric] = self.metric_payload(0, count=0)
         else:
+            LOGGER.DEBUG('Last value: %r, Current value: %r, Report value: %r',
+                         self.derive_last_interval[metric], value,
+                         self.derive[metric])
             cval = value - self.derive_last_interval[metric]
             self.derive[metric] = self.metric_payload(cval, count=count)
         self.derive_last_interval[metric] = value
