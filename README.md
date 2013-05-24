@@ -1,7 +1,7 @@
 newrelic_plugin_agent
 =====================
 
-Agent that polls supported backend systems and submits the results to the
+An agent that polls supported backend systems and submits the results to the
 NewRelic platform. Currently supported backend systems are:
 
 - Apache HTTP Server
@@ -18,12 +18,13 @@ NewRelic platform. Currently supported backend systems are:
 Installation Instructions
 -------------------------
 1. Unzip the archive
-2. In the archive directory:
+2. Ensure that setuptools is up to date and installed on your system.
+3. In the archive directory:
 
     python setup.py install
 
-3. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
-4. Run the app:
+4. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
+5. Run the app:
 
     newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
 
@@ -34,12 +35,47 @@ Sample configuration and init.d script are installed in /opt/newrelic_plugin_age
 Installing Additional Requirements
 ----------------------------------
 
-To use the pgBouncer plugin you must install the psycopg2 library. To easily do
+To use the pgBouncer or PostgreSQL plugin you must install the psycopg2 library. To easily do
 this, make sure you have the latest version of pip installed (http://www.pip-installer.org/). This should be done after installing the agent itself.
 
 Once installed, from inside the source directory run the following command:
 
     pip install -e .[pgbouncer]
+
+or
+
+    pip install -e .[postgresql]
+
+Apache HTTPd Installation Nodes
+-------------------------------
+Enable the HTTPd server status page in the default virtual host. The following example configuration snippet for Apache HTTPd demonstrates how to do this:
+
+    <Location /server-status>
+        SetHandler server-status
+        Order deny,allow
+        Deny from all
+        Allow from all
+    </Location>
+
+Nginx Installation Notes
+------------------------
+Enable the nginx stub_status setting on the default site in your configuration. The following example configuration snippet for Nginx demonstates how to do this:
+
+      location /nginx_stub_status {
+        stub_status on;
+      }
+
+pgBouncer Installation Notes
+----------------------------
+The user specified must be a stats user.
+
+PostgreSQL Installation Notes
+-----------------------------
+The user specified must have the ability to query the PostgreSQL system catalog.
+
+RabbitMQ Installation Notes
+---------------------------
+The user specified must have access to all virtual hosts you wish to monitor and should have either the Administrator tag or the Monitor tag.
 
 Configuration Example
 ---------------------
@@ -129,3 +165,12 @@ Configuration Example
           level: ERROR
           propagate: True
           handlers: [console, file]
+
+Troubleshooting
+---------------
+If the installation does not install the "newrelic_plugin_agent" application in /usr/bin then it is likely that setuptools or distribute is not up to date. The following commands can be run to install distribute and pip for installing the application:
+
+    curl http://python-distribute.org/distribute_setup.py | python
+    curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
+
+If the application installs but doesn't seem to be submitting status, check the logfile which at /tmp/newrelic_plugin_agent.log if the default example logging configuration is used.
