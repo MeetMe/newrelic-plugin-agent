@@ -25,6 +25,14 @@ Application:
   #  host: localhost
   #  port: 11211
 
+  #mongodb:
+  #  name: hostname
+  #  host: localhost
+  #  port: 27017
+  #  databases:
+  #  - test
+  #  - yourdbname
+
   #nginx:
   #  name: hostname
   #  host: localhost

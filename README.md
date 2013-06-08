@@ -8,6 +8,7 @@ NewRelic platform. Currently supported backend systems are:
 - CouchDB
 - Edgecast CDN "Realtime" API
 - Memcached
+- MongoDB
 - Nginx
 - pgBouncer
 - PostgreSQL
@@ -35,10 +36,14 @@ Sample configuration and init.d script are installed in /opt/newrelic_plugin_age
 Installing Additional Requirements
 ----------------------------------
 
-To use the pgBouncer or PostgreSQL plugin you must install the psycopg2 library. To easily do
+To use the MongoDB, pgBouncer or PostgreSQL plugin you must install the psycopg2 library. To easily do
 this, make sure you have the latest version of pip installed (http://www.pip-installer.org/). This should be done after installing the agent itself.
 
 Once installed, from inside the source directory run the following command:
+
+    pip install -e .[mongodb]
+
+or
 
     pip install -e .[pgbouncer]
 
@@ -101,6 +106,15 @@ Configuration Example
         name: My Edgecase Account
         account: ACCOUNT_NUMBER
         token: API_TOKEN
+
+      mongodb:
+        name: hostname
+        host: localhost
+        port: 27017
+        databases:
+          - database_name_1
+          - database_name_2
+          - etc
 
       memcached:
         name: localhost

@@ -16,10 +16,14 @@ class Plugin(object):
     def __init__(self, config, poll_interval, last_interval_values=None):
         self.poll_interval = poll_interval
         self.config = config
-        self.derive = dict()
+
+        self.derive_values = dict()
         self.derive_last_interval = last_interval_values or dict()
-        self.gauge = dict()
-        self.rate = dict()
+
+
+        self.derive_last_interval = last_interval_values or dict()
+        self.gauge_values = dict()
+        self.rate_values = dict()
 
     def add_derive_value(self, metric_name, units, value, count=None):
         """Add a value that will derive the current value from the difference
@@ -32,21 +36,41 @@ class Plugin(object):
         :param str metric_name: The name of the metric
         :param str units: The unit type
         :param int value: The value to add
+        :param int count: The number of items the timing is for
 
         """
         if value is None:
             value = 0
         metric = self.metric_name(metric_name, units)
         if metric not in self.derive_last_interval.keys():
-            LOGGER.debug('Bypassing initial metric value for first run')
-            self.derive[metric] = self.metric_payload(0, count=0)
+            LOGGER.debug('Bypassing initial %s value for first run', metric)
+            self.derive_values[metric] = self.metric_payload(0, count=0)
         else:
             cval = value - self.derive_last_interval[metric]
-            self.derive[metric] = self.metric_payload(cval, count=count)
-            LOGGER.debug('%s: Last: %r, Current: %r, Reportint: %r',
+            self.derive_values[metric] = self.metric_payload(cval, count=count)
+            LOGGER.debug('%s: Last: %r, Current: %r, Reporting: %r',
                          metric, self.derive_last_interval[metric], value,
-                         self.derive[metric])
+                         self.derive_values[metric])
         self.derive_last_interval[metric] = value
+
+    def add_derive_timing_value(self, metric_name, units, count, total_value,
+                                last_value=None):
+        """For timing based metrics that have a count of objects for the timing
+        and an optional last value.
+
+        :param str metric_name: The name of the metric
+        :param str units: The unit type
+        :param int count: The number of items the timing is for
+        :param int total_value: The timing value
+        :param int last_value: The last value
+
+        """
+        if last_value is None:
+            return self.add_derive_value(metric_name, units, total_value, count)
+        self.add_derive_value('%s/Total' % metric_name,
+                              units, total_value, count)
+        self.add_derive_value('%s/Last' % metric_name,
+                              units, last_value, count)
 
     def add_gauge_value(self, metric_name, units, value,
                         min_val=None, max_val=None, count=None,
@@ -61,12 +85,12 @@ class Plugin(object):
 
         """
         metric = self.metric_name(metric_name, units)
-        self.gauge[metric] = self.metric_payload(value,
-                                                 min_val,
-                                                 max_val,
-                                                 count,
-                                                 sum_of_squares)
-        LOGGER.debug('%s: %r', metric_name, self.gauge[metric])
+        self.gauge_values[metric] = self.metric_payload(value,
+                                                        min_val,
+                                                        max_val,
+                                                        count,
+                                                        sum_of_squares)
+        LOGGER.debug('%s: %r', metric_name, self.gauge_values[metric])
 
     def component_data(self):
         """Create the component section of the NewRelic Platform data payload
@@ -76,9 +100,9 @@ class Plugin(object):
 
         """
         metrics = dict()
-        metrics.update(self.derive.items())
-        metrics.update(self.gauge.items())
-        metrics.update(self.rate.items())
+        metrics.update(self.derive_values.items())
+        metrics.update(self.gauge_values.items())
+        metrics.update(self.rate_values.items())
         return {'name': self.name,
                 'guid': self.GUID,
                 'duration': self.poll_interval,
@@ -105,6 +129,8 @@ class Plugin(object):
         :param str units: The unit name
 
         """
+        if not units:
+            return 'Component/%s' % metric
         return 'Component/%s[%s]' % (metric, units)
 
     def metric_payload(self, value, min_value=None, max_value=None, count=None,

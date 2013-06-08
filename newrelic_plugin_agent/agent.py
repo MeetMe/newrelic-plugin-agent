@@ -101,8 +101,6 @@ class NewRelicPluginAgent(clihelper.Controller):
             LOGGER.warning('Poll interval took greater than %i seconds',
                            self._wake_interval)
             self.next_wake_interval = self._wake_interval
-
-
         LOGGER.info('All stats processed in %.2f seconds, next wake in %.2f',
                     duration, self.next_wake_interval)
 
@@ -215,6 +213,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 if 'memcached' not in globals():
                     from newrelic_plugin_agent.plugins import memcached
                 self.poll_plugin(plugin, memcached.Memcached,
+                                 self.application_config.get(plugin))
+
+            elif plugin == 'mongodb':
+                if 'mongodb' not in globals():
+                    from newrelic_plugin_agent.plugins import mongodb
+                self.poll_plugin(plugin, mongodb.MongoDB,
                                  self.application_config.get(plugin))
 
             elif plugin == 'nginx':
