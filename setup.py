@@ -20,11 +20,12 @@ with open('MANIFEST.in', 'w') as handle:
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
 install_requires = ['clihelper>=1.7.0', 'requests']
 tests_require = []
-extras_require  = {'pgbouncer': ['psycopg2'],
-                   'pgbouncer': ['psycopg2']}
+extras_require = {'mongodb': ['pymongo'],
+                  'pgbouncer': ['psycopg2'],
+                  'postgresql': ['psycopg2']}
 
 setup(name='newrelic_plugin_agent',
-      version='1.0.6',
+      version='1.0.7',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic_plugin_agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],

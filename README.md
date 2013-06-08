@@ -62,6 +62,10 @@ Enable the HTTPd server status page in the default virtual host. The following e
         Allow from all
     </Location>
 
+MongoDB Installation Nodes
+-------------------------
+You need to install the pymongo driver, either by running "pip install pymongo" or by following the "Installing Additional Requirements" above. Each database you wish to collect metrics for must be enumerated in the configuration.
+
 Nginx Installation Notes
 ------------------------
 Enable the nginx stub_status setting on the default site in your configuration. The following example configuration snippet for Nginx demonstates how to do this:

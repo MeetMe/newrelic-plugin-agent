@@ -42,15 +42,15 @@ class Riak(base.Plugin):
         self.add_gauge_value('FSM/Object Size/100th Percentile', 'bytes',
                              stats.get('node_get_fsm_objsize_100', 0))
 
-        self.add_gauge_value('FSM/Siblings/Mean', 'siblings',
+        self.add_gauge_value('FSM/Siblings/Mean', '',
                              stats.get('node_get_fsm_siblings_mean', 0))
-        self.add_gauge_value('FSM/Siblings/Mean', 'siblings',
+        self.add_gauge_value('FSM/Siblings/Mean', '',
                              stats.get('node_get_fsm_siblings_media', 0))
-        self.add_gauge_value('FSM/Siblings/90th Percentile', 'siblings',
+        self.add_gauge_value('FSM/Siblings/90th Percentile', '',
                              stats.get('node_get_fsm_siblings_90', 0))
-        self.add_gauge_value('FSM/Siblings/95th Percentile', 'siblings',
+        self.add_gauge_value('FSM/Siblings/95th Percentile', '',
                              stats.get('node_get_fsm_siblings_95', 0))
-        self.add_gauge_value('FSM/Siblings/100th Percentile', 'siblings',
+        self.add_gauge_value('FSM/Siblings/100th Percentile', '',
                              stats.get('node_get_fsm_siblings_100', 0))
 
         self.add_gauge_value('FSM/Time/Get/Mean', 'us',
@@ -75,20 +75,20 @@ class Riak(base.Plugin):
         self.add_gauge_value('FSM/Time/Put/100th Percentile', 'us',
                              stats.get('node_put_fsm_time_100', 0))
 
-        self.add_derive_value('Failures/Pre-commit', 'failures',
+        self.add_derive_value('Failures/Pre-commit', '',
                               stats.get('precommit_fail', 0))
-        self.add_derive_value('Failures/Post-commit', 'failures',
+        self.add_derive_value('Failures/Post-commit', '',
                               stats.get('postcommit_fail', 0))
 
-        self.add_derive_value('Gossip/Ignored', 'msgs',
+        self.add_derive_value('Gossip/Ignored', '',
                               stats.get('ignored_gossip_total', 0))
-        self.add_derive_value('Gossip/Received', 'msgs',
+        self.add_derive_value('Gossip/Received', '',
                               stats.get('gossip_received', 0))
 
-        self.add_derive_value('Handoff Timeouts', 'timeouts',
+        self.add_derive_value('Handoff Timeouts', '',
                               stats.get('handoff_timeouts', 0))
 
-        self.add_gauge_value('Mappers/Executing', 'mappers',
+        self.add_gauge_value('Mappers/Executing', '',
                              stats.get('executing_mappers', 0))
 
         self.add_gauge_value('Memory/Allocated', 'bytes',
@@ -114,20 +114,20 @@ class Riak(base.Plugin):
         self.add_gauge_value('Memory/Erlang/Total', 'bytes',
                              stats.get('memory_total', 0))
 
-        self.add_gauge_value('Nodes/Connected', 'nodes',
+        self.add_gauge_value('Nodes/Connected', '',
                              len(stats.get('connected_nodes', list())))
 
-        self.add_gauge_value('Pipeline/Active', 'pipelines',
+        self.add_gauge_value('Pipeline/Active', '',
                              stats.get('pipeline_active', 0))
-        self.add_derive_value('Pipeline/Created', 'pipelines',
+        self.add_derive_value('Pipeline/Created', '',
                               stats.get('pipeline_create_count', 0))
-        self.add_derive_value('Pipeline/Creation Errors', 'pipelines',
+        self.add_derive_value('Pipeline/Creation Errors', '',
                               stats.get('pipeline_create_error_count', 0))
 
-        self.add_gauge_value('Processes/OS', 'processes',
+        self.add_gauge_value('Processes/OS', '',
                              stats.get('cpu_nprocs', 0))
 
-        self.add_gauge_value('Processes/Erlang', 'processes',
+        self.add_gauge_value('Processes/Erlang', '',
                              stats.get('cpu_nprocs', 0))
 
         self.add_gauge_value('Protocol Buffer Connections', 'active',
@@ -135,41 +135,41 @@ class Riak(base.Plugin):
         self.add_derive_value('Protocol Buffer Connections', 'total',
                               stats.get('pbc_connects_total', 0))
 
-        self.add_derive_value('Read Repairs', 'repairs',
+        self.add_derive_value('Read Repairs', '',
                               stats.get('read_repairs_total', 0))
 
-        self.add_derive_value('Requests/Gets', 'requests',
+        self.add_derive_value('Requests/Gets', '',
                               stats.get('node_gets_total', 0))
-        self.add_derive_value('Requests/Puts', 'requests',
+        self.add_derive_value('Requests/Puts', '',
                               stats.get('node_puts_total', 0))
-        self.add_derive_value('Requests/Redirected', 'requests',
+        self.add_derive_value('Requests/Redirected', '',
                               stats.get('coord_redirs_total', 0))
 
 
-        self.add_gauge_value('Ring/Members', 'nodes',
+        self.add_gauge_value('Ring/Members', '',
                              len(stats.get('ring_members', list())))
-        self.add_gauge_value('Ring/Partitions', 'partitions',
+        self.add_gauge_value('Ring/Partitions', '',
                              stats.get('ring_num_partitions', 0))
-        self.add_gauge_value('Ring/Size', 'partitions',
+        self.add_gauge_value('Ring/Size', '',
                              stats.get('ring_creation_size', 0))
-        self.add_derive_value('Ring/Reconciled', 'partitions',
+        self.add_derive_value('Ring/Reconciled', '',
                               stats.get('rings_reconciled_total', 0))
 
-        self.add_derive_value('VNodes/Gets', 'requests',
+        self.add_derive_value('VNodes/Gets', '',
                               stats.get('vnode_gets_total', 0))
-        self.add_derive_value('VNodes/Puts', 'requests',
+        self.add_derive_value('VNodes/Puts', '',
                               stats.get('vnode_puts_total', 0))
 
-        self.add_derive_value('VNodes/Index', 'deletes',
+        self.add_derive_value('VNodes/Index', '',
                               stats.get('vnode_index_deletes_total', 0))
-        self.add_derive_value('VNodes/Index', 'deletes postings',
+        self.add_derive_value('VNodes/Index', '',
                               stats.get('vnode_index_deletes_postings_total',
                                         0))
-        self.add_derive_value('VNodes/Index', 'reads',
+        self.add_derive_value('VNodes/Index', '',
                               stats.get('vnode_index_reads_total', 0))
-        self.add_derive_value('VNodes/Index', 'writes',
+        self.add_derive_value('VNodes/Index', '',
                               stats.get('vnode_index_writes_total', 0))
-        self.add_derive_value('VNodes/Index', 'writes postings',
+        self.add_derive_value('VNodes/Index', '',
                               stats.get('vnode_writes_postings_total', 0))
 
     @property

@@ -31,40 +31,41 @@ class CouchDB(base.Plugin):
         self.add_response_code_stats(stats['httpd_status_codes'])
 
     def add_database_stats(self, stats):
-        self.add_gauge_value('Database/Open', 'dbs',
+        self.add_gauge_value('Database/Open', '',
                              stats['open_databases'].get('current', 0),
                              stats['open_databases'].get('min', 0),
                              stats['open_databases'].get('max', 0))
-        self.add_derive_value('Database/IO/Reads', 'ops',
+        self.add_derive_value('Database/IO/Reads', '',
                               stats['database_reads'].get('current', 0))
-        self.add_derive_value('Database/IO/Writes', 'ops',
+        self.add_derive_value('Database/IO/Writes', '',
                               stats['database_writes'].get('current', 0))
-        self.add_gauge_value('Files/Open', 'files',
+        self.add_gauge_value('Files/Open', '',
                              stats['open_os_files'].get('current', 0),
                              stats['open_os_files'].get('min', 0),
                              stats['open_os_files'].get('max', 0))
 
-    def add_request_stats(self, couchdb_stats, httpd_stats):
-        self.add_derive_value('Requests/Processed', 'sec',
-                              couchdb_stats['request_time'].get('current', 0))
-        self.add_derive_value('Requests/Processed', 'requests',
-                              httpd_stats['requests'].get('current', 0))
-        self.add_derive_value('Requests/Bulk', 'requests',
-                              httpd_stats['bulk_requests'].get('current', 0))
-        self.add_derive_value('Requests/View', 'requests',
-                              httpd_stats['view_reads'].get('current', 0))
-        self.add_derive_value('Requests/Temporary View', 'requests',
-                              httpd_stats['temporary_view_reads'].get('current',
-                                                                      0))
+    def add_request_stats(self, couchdb, httpd):
+
+        self.add_derive_timing_value('Requests/Velocity', 'sec',
+                                     httpd['requests'].get('current', 0),
+                                     couchdb['request_time'].get('current', 0))
+        self.add_derive_value('Requests/Document', '',
+                              httpd['requests'].get('current', 0))
+        self.add_derive_value('Requests/Bulk', '',
+                              httpd['bulk_requests'].get('current', 0))
+        self.add_derive_value('Requests/View', '',
+                              httpd['view_reads'].get('current', 0))
+        self.add_derive_value('Requests/Temporary View', '',
+                              httpd['temporary_view_reads'].get('current', 0))
 
     def add_request_methods(self, stats):
         for method in self.HTTP_METHODS:
-            self.add_derive_value('Requests/Method/%s' % method, 'requests',
+            self.add_derive_value('Requests/Method/%s' % method, '',
                                   stats[method].get('current', 0))
 
     def add_response_code_stats(self, stats):
         for code in self.STATUS_CODES:
-            self.add_derive_value('Requests/Response/%s' % code, 'requests',
+            self.add_derive_value('Requests/Response/%s' % code, '',
                                   stats[str(code)].get('current', 0))
 
     @property

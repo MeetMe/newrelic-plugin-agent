@@ -26,45 +26,44 @@ class Redis(base.Plugin):
         :param dict stats: all of the nodes
 
         """
-        self.add_gauge_value('Clients/Blocked', 'clients',
+        self.add_gauge_value('Clients/Blocked', '',
                              stats.get('blocked_clients', 0))
-        self.add_gauge_value('Clients/Connected', 'clients',
+        self.add_gauge_value('Clients/Connected', '',
                              stats.get('connected_clients', 0))
-        self.add_gauge_value('Slaves/Connected', 'slaves',
+        self.add_gauge_value('Slaves/Connected', '',
                              stats.get('connected_slaves', 0))
 
         self.add_derive_value(self.name(server),
-                              'Keys/Evicted', 'keys',
+                              'Keys/Evicted', '',
                               stats.get('evicted_keys', 0))
         self.add_derive_value(self.name(server),
-                              'Keys/Expired', 'keys',
+                              'Keys/Expired', '',
                               stats.get('expired_keys', 0))
         self.add_derive_value(self.name(server),
-                              'Keys/Hit', 'requests',
+                              'Keys/Hit', '',
                               stats.get('keyspace_hits', 0))
         self.add_derive_value(self.name(server),
-                              'Keys/Missed', 'requests',
+                              'Keys/Missed', '',
                               stats.get('keyspace_misses', 0))
 
         self.add_derive_value(self.name(server),
-                              'Commands/Processed', 'cmds',
+                              'Commands/Processed', '',
                               stats.get('total_commands_processed', 0))
         self.add_derive_value(self.name(server),
-                              'Commands/Received', 'cmds',
+                              'Commands/Received', '',
                               stats.get('total_commands_received', 0))
 
-        self.add_gauge_value('Pubsub/Commands', 'patterns',
+        self.add_gauge_value('Pubsub/Commands', '',
                              stats.get('pubsub_commands', 0))
 
-        self.add_gauge_value('Pubsub/Patterns', 'patterns',
+        self.add_gauge_value('Pubsub/Patterns', '',
                              stats.get('pubsub_patterns', 0))
 
         self.add_derive_value(self.name(server),
                               'System/CPU/User/Self', 'sec',
                               stats.get('used_cpu_user', 0))
         self.add_derive_value(self.name(server),
-                              'System/CPU/User/Children',
-                              'sec',
+                              'System/CPU/User/Children', 'sec',
                               stats.get('used_cpu_user_children', 0))
 
         self.add_derive_value(self.name(server),
@@ -75,7 +74,7 @@ class Redis(base.Plugin):
                               'sec',
                               stats.get('used_cpu_sys_children', 0))
 
-        self.add_gauge_value('System/Memory', 'sec',
+        self.add_gauge_value('System/Memory', 'mb',
                              stats.get('used_memory', 0) / 1048576,
                              max_val=stats.get('used_memory_peak',
                                                 0) / 1048576)
@@ -84,16 +83,16 @@ class Redis(base.Plugin):
 
         keys, expires = 0, 0
         for db in range(0, server.get('db_count', 16)):
-            self.add_gauge_value('DB/%s/Expires' % db, 'keys',
+            self.add_gauge_value('DB/%s/Expires' % db, '',
                                  stats.get('db%i' % db,
                                            dict()).get('expires', 0))
-            self.add_gauge_value('DB/%s/Keys' % db, 'keys',
+            self.add_gauge_value('DB/%s/Keys' % db, '',
                                  stats.get('db%i' % db, dict()).get('keys', 0))
             keys += stats.get('db%i' % db, dict()).get('keys', 0)
             expires += stats.get('db%i' % db, dict()).get('expires', 0)
 
-        self.add_gauge_value('Keys/Total', 'keys', keys)
-        self.add_gauge_value('Keys/Will Expire', 'keys', expires)
+        self.add_gauge_value('Keys/Total', '', keys)
+        self.add_gauge_value('Keys/Will Expire', '', expires)
 
     def add_derive_value(self, key, metric_name, units, value):
         """Add a value that will derive the current value from the difference

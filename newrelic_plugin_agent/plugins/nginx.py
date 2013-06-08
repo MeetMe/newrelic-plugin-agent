@@ -31,13 +31,13 @@ class Nginx(base.Plugin):
             'writing': 'Connections/Writing',
             'waiting': 'Connections/Waiting'}
 
-    TYPES = {'connections': 'connections',
-            'accepts': 'requests',
-            'handled': 'requests',
-            'requests': 'requests',
-            'reading': 'connections',
-            'writing': 'connections',
-            'waiting': 'connections'}
+    TYPES = {'connections': '',
+            'accepts': '',
+            'handled': '',
+            'requests': '',
+            'reading': '',
+            'writing': '',
+            'waiting': ''}
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node
@@ -53,11 +53,9 @@ class Nginx(base.Plugin):
                 except (IndexError, ValueError):
                     value = 0
                 if key in self.GAUGES:
-                    self.add_gauge_value(self.KEYS[key], self.TYPES[key],
-                                         value)
+                    self.add_gauge_value(self.KEYS[key], '', value)
                 else:
-                    self.add_derive_value(self.KEYS[key], self.TYPES[key],
-                                          value)
+                    self.add_derive_value(self.KEYS[key], '', value)
 
     @property
     def nginx_stats_url(self):
@@ -86,7 +84,7 @@ class Nginx(base.Plugin):
         return ''
 
     def poll(self):
-        LOGGER.info('Polling Nginx via %s', self.nginx_stats_url)
+        LOGGER.info('Polling Nginx at %s', self.nginx_stats_url)
         start_time = time.time()
         self.derive = dict()
         self.gauge = dict()

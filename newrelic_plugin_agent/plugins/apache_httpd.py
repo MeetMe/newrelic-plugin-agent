@@ -39,16 +39,16 @@ class ApacheHTTPD(base.Plugin):
              'bytes_per_request': 'bytes',
              'bytes': 'kb',
              'uptime': 'sec',
-             'busy': 'workers',
-             'idle': 'workers',
-             'cpuload': '%s',
+             'busy': '',
+             'idle': '',
+             'cpuload': '',
              'requests_per_sec': 'requests/sec',
-             'accesses': 'accesses'}
+             'accesses': ''}
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node
 
-        :param str stats: The stub stats content
+        :param str stats: The stats content from Apache as a string
 
         """
         matches = PATTERN.match(stats)

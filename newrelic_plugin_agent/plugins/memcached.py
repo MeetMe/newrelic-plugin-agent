@@ -53,34 +53,47 @@ class Memcached(base.Plugin):
         :param dict stats: all of the nodes
 
         """
-        self.add_derive_value('Bytes Sent', 'bytes', stats['bytes_written'])
-        self.add_derive_value('Bytes Received', 'bytes', stats['bytes_read'])
-        self.add_gauge_value('Connection/Count', 'connection',
+        self.command_value('CAS', 'cas', stats)
+        self.add_derive_value('Command/Requests/Flush', '', stats['cmd_flush'])
+        self.add_derive_value('Command/Errors/CAS', '', stats['cas_badval'])
+        self.command_value('Decr', 'decr', stats)
+        self.command_value('Delete', 'delete', stats)
+        self.command_value('Get', 'get', stats)
+        self.command_value('Incr', 'incr', stats)
+        self.add_derive_value('Command/Requests/Set', '', stats['cmd_set'])
+
+        self.add_gauge_value('Connection/Count', '',
                              stats['curr_connections'])
-        self.add_gauge_value('Connection/Structures', 'struct',
+        self.add_gauge_value('Connection/Structures', '',
                              stats['connection_struct'])
-        self.add_derive_value('Connection/Yields', 'yield',
+        self.add_derive_value('Connection/Yields', '',
                               stats['conn_yields'])
-        self.add_derive_value('Evictions', 'keys', stats['evictions'])
-        self.add_gauge_value('Items', 'keys', stats['curr_items'])
-        self.add_derive_value('Commands/CAS', 'hit', stats['cas_hits'])
-        self.add_derive_value('Commands/CAS', 'miss', stats['cas_misses'])
-        self.add_derive_value('Commands/CAS', 'badval', stats['cas_badval'])
-        self.add_derive_value('Commands/Decr', 'hit', stats['decr_hits'])
-        self.add_derive_value('Commands/Decr', 'miss', stats['decr_misses'])
-        self.add_derive_value('Commands/Delete', 'hit', stats['delete_hits'])
-        self.add_derive_value('Commands/Delete', 'miss',
-                              stats['delete_misses'])
-        self.add_derive_value('Commands/Flush', 'requests', stats['cmd_flush'])
-        self.add_derive_value('Commands/Get', 'requests', stats['cmd_get'])
-        self.add_derive_value('Commands/Get', 'hit', stats['get_hits'])
-        self.add_derive_value('Commands/Get', 'miss', stats['get_misses'])
-        self.add_derive_value('Commands/Incr', 'hit',  stats['incr_hits'])
-        self.add_derive_value('Commands/Incr', 'miss', stats['incr_misses'])
-        self.add_derive_value('Commands/Set', 'requests', stats['cmd_set'])
+        self.add_derive_value('Evictions', '', stats['evictions'])
+        self.add_gauge_value('Items', '', stats['curr_items'])
+
+        self.add_derive_value('Network/In', 'bytes', stats['bytes_read'])
+        self.add_derive_value('Network/Out', 'bytes', stats['bytes_written'])
+
+
         self.add_derive_value('System/CPU/System', 'sec', stats['rusage_user'])
         self.add_derive_value('System/CPU/User', 'sec', stats['rusage_user'])
         self.add_gauge_value('System/Memory', 'bytes', stats['bytes'])
+
+    def command_value(self, name, prefix, stats):
+        """Process commands adding the command and the hit ratio.
+
+        :param str name: The command name
+        :param str prefix: The command prefix
+        :param dict stats: The request stats
+
+        """
+        total = stats['%s_hits' % prefix] + stats['%s_misses' % prefix]
+        if total > 0:
+            ratio = (float(stats['%s_hits' % prefix]) / float(total)) * 100
+        else:
+            ratio = 0
+        self.add_derive_value('Command/Requests/%s' % name, '', total)
+        self.add_gauge_value('Command/Hit Ratio/%s' % name, '', ratio)
 
     def connect(self):
         """Create a socket and connect it to the memcached daemon.
