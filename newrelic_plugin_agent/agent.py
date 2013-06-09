@@ -153,6 +153,7 @@ class NewRelicPluginAgent(clihelper.Controller):
                         components = list()
                         metrics = 0
                     components.append(component)
+
             elif isinstance(data, dict):
                 self.process_min_max_values(data)
                 metrics += len(data['metrics'].keys())
@@ -161,6 +162,8 @@ class NewRelicPluginAgent(clihelper.Controller):
                     components = list()
                     metrics = 0
                 components.append(data)
+
+        LOGGER.debug('Done, will send remainder of %i metrics', metrics)
         self.send_components(components, metrics)
 
     def send_components(self, components, metrics):
@@ -170,7 +173,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         """
         LOGGER.info('Sending %i metrics to NewRelic', metrics)
         body = {'agent': self.agent_data, 'components': components}
-
+        LOGGER.debug(body)
         try:
             response = requests.post(self.PLATFORM_URL,
                                      headers=self.http_headers,

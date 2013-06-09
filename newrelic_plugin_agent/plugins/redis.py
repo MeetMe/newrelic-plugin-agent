@@ -33,63 +33,59 @@ class Redis(base.Plugin):
         self.add_gauge_value('Slaves/Connected', '',
                              stats.get('connected_slaves', 0))
 
-        self.add_derive_value(self.name(server),
-                              'Keys/Evicted', '',
+        self.add_derive_value(self.name(server), 'Keys/Evicted', '',
                               stats.get('evicted_keys', 0))
-        self.add_derive_value(self.name(server),
-                              'Keys/Expired', '',
+        self.add_derive_value(self.name(server), 'Keys/Expired', '',
                               stats.get('expired_keys', 0))
-        self.add_derive_value(self.name(server),
-                              'Keys/Hit', '',
+        self.add_derive_value(self.name(server), 'Keys/Hit', '',
                               stats.get('keyspace_hits', 0))
-        self.add_derive_value(self.name(server),
-                              'Keys/Missed', '',
+        self.add_derive_value(self.name(server), 'Keys/Missed', '',
                               stats.get('keyspace_misses', 0))
 
-        self.add_derive_value(self.name(server),
-                              'Commands/Processed', '',
+        self.add_derive_value(self.name(server), 'Commands Processed', '',
                               stats.get('total_commands_processed', 0))
-        self.add_derive_value(self.name(server),
-                              'Commands/Received', '',
-                              stats.get('total_commands_received', 0))
+        self.add_derive_value(self.name(server), 'Connections', '',
+                              stats.get('total_connections_received', 0))
+        self.add_derive_value(self.name(server), 'Changes Since Last Save', '',
+                              stats.get('changes_since_last_save', 0))
 
         self.add_gauge_value('Pubsub/Commands', '',
                              stats.get('pubsub_commands', 0))
-
         self.add_gauge_value('Pubsub/Patterns', '',
                              stats.get('pubsub_patterns', 0))
 
         self.add_derive_value(self.name(server),
-                              'System/CPU/User/Self', 'sec',
+                              'CPU/User/Self', 'sec',
                               stats.get('used_cpu_user', 0))
         self.add_derive_value(self.name(server),
-                              'System/CPU/User/Children', 'sec',
-                              stats.get('used_cpu_user_children', 0))
-
-        self.add_derive_value(self.name(server),
-                              'System/CPU/System/Self', 'sec',
+                              'CPU/System/Self', 'sec',
                               stats.get('used_cpu_sys', 0))
-        self.add_derive_value(self.name(server),
-                              'System/CPU/System/Children',
-                              'sec',
-                              stats.get('used_cpu_sys_children', 0))
 
-        self.add_gauge_value('System/Memory', 'mb',
+        self.add_derive_value(self.name(server),
+                              'CPU/User/Children', 'sec',
+                              stats.get('used_cpu_user_childrens', 0))
+
+        self.add_derive_value(self.name(server),
+                              'CPU/System/Children', 'sec',
+                              stats.get('used_cpu_sys_childrens', 0))
+
+        self.add_gauge_value('Memory Use', 'MB',
                              stats.get('used_memory', 0) / 1048576,
                              max_val=stats.get('used_memory_peak',
                                                 0) / 1048576)
-        self.add_gauge_value('System/Fragmentation', 'ratio',
+        self.add_gauge_value('Memory Fragmentation', 'ratio',
                              stats.get('mem_fragmentation_ratio', 0))
 
         keys, expires = 0, 0
         for db in range(0, server.get('db_count', 16)):
+
+            db_stats = stats.get('db%i' % db, dict())
             self.add_gauge_value('DB/%s/Expires' % db, '',
-                                 stats.get('db%i' % db,
-                                           dict()).get('expires', 0))
+                                db_stats.get('expires', 0))
             self.add_gauge_value('DB/%s/Keys' % db, '',
-                                 stats.get('db%i' % db, dict()).get('keys', 0))
-            keys += stats.get('db%i' % db, dict()).get('keys', 0)
-            expires += stats.get('db%i' % db, dict()).get('expires', 0)
+                                 db_stats.get('keys', 0))
+            keys += db_stats.get('keys', 0)
+            expires += db_stats.get('expires', 0)
 
         self.add_gauge_value('Keys/Total', '', keys)
         self.add_gauge_value('Keys/Will Expire', '', expires)
@@ -115,12 +111,12 @@ class Redis(base.Plugin):
         metric = self.metric_name(metric_name, units)
         if metric not in self.derive_last_interval[key].keys():
             LOGGER.debug('Bypassing initial metric value for first run')
-            self.derive[metric] = self.metric_payload(0)
+            self.derive_values[metric] = self.metric_payload(0)
         else:
             cval = value - self.derive_last_interval[key][metric]
-            self.derive[metric] = self.metric_payload(cval)
+            self.derive_values[metric] = self.metric_payload(cval)
         self.derive_last_interval[key][metric] = value
-        LOGGER.debug('%s: %r %r', metric, self.derive[metric], value)
+        LOGGER.debug('%s: %r %r', metric, self.derive_values[metric], value)
 
     def component_data(self, name):
         """Create the component section of the NewRelic Platform data payload
@@ -131,9 +127,9 @@ class Redis(base.Plugin):
 
         """
         metrics = dict()
-        metrics.update(self.derive.items())
-        metrics.update(self.gauge.items())
-        metrics.update(self.rate.items())
+        metrics.update(self.derive_values.items())
+        metrics.update(self.gauge_values.items())
+        metrics.update(self.rate_values.items())
         return {'name': name,
                 'guid': self.GUID,
                 'duration': self.poll_interval,
