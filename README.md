@@ -18,16 +18,18 @@ NewRelic platform. Currently supported backend systems are:
 
 Installation Instructions
 -------------------------
-1. Install via pip or easy_install:
+1. Install via pip*:
 
     pip install newrelic-plugin-agent
+
+* See pip installation instructions at http://www.pip-installer.org/en/latest/installing.html
 
 2. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
 3. Run the app:
 
     newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
 
-* - Where -f is to run it in the foreground instead of as a daemon.
+Where -f is to run it in the foreground instead of as a daemon.
 
 Sample configuration and init.d script are installed in /opt/newrelic_plugin_agent
 
