@@ -24,7 +24,7 @@ Installation Instructions
 
 * See pip installation instructions at http://www.pip-installer.org/en/latest/installing.html
 
-2. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
+2. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/newrelic/newrelic_plugin_agent.cfg to /etc/newrelic/newrelic_plugin_agent.cfg and edit the configuration in that file.
 
 3. Run the app:
 
@@ -97,7 +97,7 @@ Configuration Example
     %YAML 1.2
     ---
     Application:
-      license_key: VALUE
+      license_key: REPLACE_WITH_REAL_KEY
       poll_interval: 60
 
       apache_httpd:
@@ -167,7 +167,7 @@ Configuration Example
         port: 8098
 
     Daemon:
-      pidfile: /var/run/newrelic_plugin_agent.pid
+      pidfile: /var/run/newrelic/newrelic_plugin_agent.pid
 
     Logging:
       formatters:
@@ -177,7 +177,7 @@ Configuration Example
         file:
           class : logging.handlers.RotatingFileHandler
           formatter: verbose
-          filename: /tmp/newrelic_plugin_agent.log
+          filename: /var/log/newrelic/newrelic_plugin_agent.log
           maxBytes: 10485760
           backupCount: 3
       loggers:
