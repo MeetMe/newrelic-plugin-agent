@@ -141,13 +141,26 @@ class Redis(base.Plugin):
         :rtype: socket
 
         """
+
+        params = (config.get('host', self.DEFAULT_HOST),
+                  config.get('port', self.DEFAULT_PORT))
+        LOGGER.debug('Connecting to Redis at %s:%s', params[0], params[1])
         connection = socket.socket()
         try:
-            connection.connect((config.get('host', self.DEFAULT_HOST),
-                                config.get('port', self.DEFAULT_PORT)))
+            connection.connect(params)
         except socket.error as error:
             LOGGER.error('Error connecting to %s:%i - %s', error)
             return None
+
+        if config.get('password'):
+            connection.send("*2\r\n$4\r\nAUTH\r\n$%i\r\n%s\r\n" %
+                            (len(config['password']), config['password']))
+            buffer_value = connection.recv(self.SOCKET_RECV_MAX)
+            if buffer_value == '+OK\r\n':
+                return connection
+            LOGGER.error('Authentication error: %s', buffer_value[4:].strip())
+            return None
+
         return connection
 
     def fetch_data(self, connection):
@@ -203,7 +216,7 @@ class Redis(base.Plugin):
         the run method.
 
         """
-        LOGGER.info('Polling Memcached')
+        LOGGER.info('Polling Redis')
         start_time = time.time()
 
         # Initialize the values each iteration
@@ -216,6 +229,10 @@ class Redis(base.Plugin):
         # Fetch the data from Memcached
         for server in self.config:
             connection = self.connect(server)
+            if not connection:
+                LOGGER.error('Aborting stat collection due to connection error')
+                continue
+
             self.send_command(connection)
             self.add_datapoints(server, self.fetch_data(connection))
             self._values.append(self.component_data(self.name(server)))
