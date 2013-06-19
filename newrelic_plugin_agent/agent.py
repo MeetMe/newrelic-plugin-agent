@@ -1,5 +1,5 @@
 """
-Redis Agent for the New Relic Platform
+Multiple Plugin Agent for the New Relic Platform
 
 """
 import clihelper
@@ -18,8 +18,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class NewRelicPluginAgent(clihelper.Controller):
-    """The NewRelicRedisAgent class implements a agent that polls Redis
-    every minute and reports the state of a Redis cluster to NewRelic.
+    """The NewRelicPluginAgent class implements a agent that polls plugins
+    every minute and reports the state to NewRelic.
 
     """
     IGNORE_KEYS = ['license_key', 'poll_interval']

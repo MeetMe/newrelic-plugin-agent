@@ -12,10 +12,10 @@
 APP="/usr/bin/newrelic_plugin_agent"
 
 # Configuration dir
-CONFIG_DIR="/etc"
+CONFIG_DIR="/etc/newrelic"
 
 # PID File
-PID_FILE="/var/run/newrelic_plugin_agent.pid"
+PID_FILE="/var/run/newrelic/newrelic_plugin_agent.pid"
 
 # Additional arguments
 OPTS=""
@@ -26,7 +26,7 @@ if [ -f /etc/sysconfig/newrelic_plugin_agent ]; then
 fi
 
 # Configuration file
-CONF="${CONF:-${CONFIG_DIR}/newrelic_plugin_agent.yml}"
+CONF="${CONF:-${CONFIG_DIR}/newrelic_plugin_agent.cfg}"
 
 if [ ! -f "${CONF}" ]; then
   echo -n $"cannot find newrelic_plugin_agent configuration file: '${CONF}'"
