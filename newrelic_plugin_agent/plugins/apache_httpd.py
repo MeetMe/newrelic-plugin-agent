@@ -12,7 +12,7 @@ from newrelic_plugin_agent.plugins import base
 LOGGER = logging.getLogger(__name__)
 
 PATTERN = re.compile(r'Total Accesses\:\s(?P<accesses>\d+)\nTotal\skBytes\:'
-                     r'\s(?P<bytes>\d+)\nCPULoad\:\s(?P<cpuload>[\.\d]+)\n'
+                     r'\s(?P<bytes>\d+)\nCPULoad\:\s(?P<cpuload>[\.\de\-]+)\s'
                      r'Uptime\:\s(?P<uptime>\d+)\sReqPerSec\:\s'
                      r'(?P<requests_per_sec>[\d\.]+)\nBytesPerSec\:\s'
                      r'(?P<bytes_per_sec>[\d\.]+)\nBytesPerReq\:\s'
