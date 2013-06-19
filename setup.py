@@ -25,7 +25,7 @@ extras_require = {'mongodb': ['pymongo'],
                   'postgresql': ['psycopg2']}
 
 setup(name='newrelic_plugin_agent',
-      version='1.0.10',
+      version='1.0.11',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic_plugin_agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],
