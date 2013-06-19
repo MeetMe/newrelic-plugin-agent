@@ -25,13 +25,14 @@ Installation Instructions
 * See pip installation instructions at http://www.pip-installer.org/en/latest/installing.html
 
 2. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/example.yml to /etc/newrelic_plugin_agent.yml and edit the configuration in that file.
+
 3. Run the app:
 
     newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
 
 Where -f is to run it in the foreground instead of as a daemon.
 
-Sample configuration and init.d script are installed in /opt/newrelic_plugin_agent
+Sample configuration and init.d scripts are installed in /opt/newrelic_plugin_agent
 
 Installing Additional Requirements
 ----------------------------------
@@ -85,6 +86,10 @@ The user specified must have the ability to query the PostgreSQL system catalog.
 RabbitMQ Installation Notes
 ---------------------------
 The user specified must have access to all virtual hosts you wish to monitor and should have either the Administrator tag or the Monitor tag.
+
+Redis Installation Notes
+-----------------------------
+For Redis daemons that are password protected, add the password configuration value, otherwise omit it.
 
 Configuration Example
 ---------------------
@@ -154,6 +159,7 @@ Configuration Example
           host: localhost
           port: 6379
           db_count: 16
+          password: foobar
 
       riak:
         name: localhost
