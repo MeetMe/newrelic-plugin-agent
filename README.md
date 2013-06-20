@@ -63,6 +63,11 @@ Enable the HTTPd server status page in the default virtual host. The following e
         Allow from all
     </Location>
 
+The agent requires the exteneded information to parse metrics.  If you are not seeing any metrics on your graphs for Apache verify that you have enable ExtendedStatus, the default is off so you must enable it.  In your global Apache HTTP configuration you need to enable exetended status using:
+
+ExtendedStatus On
+
+
 MongoDB Installation Nodes
 -------------------------
 You need to install the pymongo driver, either by running "pip install pymongo" or by following the "Installing Additional Requirements" above. Each database you wish to collect metrics for must be enumerated in the configuration.
