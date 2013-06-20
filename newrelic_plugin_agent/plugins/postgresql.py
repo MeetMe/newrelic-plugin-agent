@@ -22,6 +22,10 @@ BACKENDS = """SELECT count(*) - ( SELECT count(*) FROM pg_stat_activity WHERE
 current_query = '<IDLE>' ) AS backends_active, ( SELECT count(*) FROM
 pg_stat_activity WHERE current_query = '<IDLE>' ) AS backends_idle
 FROM pg_stat_activity;"""
+BACKENDS_9_2 = """SELECT count(*) - ( SELECT count(*) FROM pg_stat_activity WHERE
+state = '<IDLE>' ) AS backends_active, ( SELECT count(*) FROM
+pg_stat_activity WHERE state = '<IDLE>' ) AS backends_idle
+FROM pg_stat_activity;"""
 TABLE_SIZE_ON_DISK = """SELECT ((sum(relpages)* 8) * 1024) AS
 size_relations FROM pg_class WHERE relkind IN ('r', 't');"""
 TABLE_COUNT = """SELECT count(1) as relations FROM pg_class WHERE
@@ -109,7 +113,10 @@ class PostgreSQL(base.Plugin):
                                   int(row.get('conflicts', 0)))
 
     def add_backend_metrics(self, cursor):
-        cursor.execute(BACKENDS)
+        if self._get_server_version(cursor.connection) < (9, 2, 0):
+            cursor.execute(BACKENDS)
+        else:
+            cursor.execute(BACKENDS_9_2)
         temp = cursor.fetchone()
         self.add_gauge_value('Backends/Active', '',
                              temp.get('backends_active', 0))
@@ -248,3 +255,9 @@ class PostgreSQL(base.Plugin):
 
         LOGGER.info('Polling complete in %.2f seconds',
                     time.time() - start_time)
+
+    def _get_server_version(self, connection):
+        """Get connection server version in PEP 369 format"""
+        v = connection.server_version
+        return (v % 1000000 / 10000, v % 10000 / 100, v % 100)
+
