@@ -23,8 +23,8 @@ current_query = '<IDLE>' ) AS backends_active, ( SELECT count(*) FROM
 pg_stat_activity WHERE current_query = '<IDLE>' ) AS backends_idle
 FROM pg_stat_activity;"""
 BACKENDS_9_2 = """SELECT count(*) - ( SELECT count(*) FROM pg_stat_activity WHERE
-state = '<IDLE>' ) AS backends_active, ( SELECT count(*) FROM
-pg_stat_activity WHERE state = '<IDLE>' ) AS backends_idle
+state = 'idle' ) AS backends_active, ( SELECT count(*) FROM
+pg_stat_activity WHERE state = 'idle' ) AS backends_idle
 FROM pg_stat_activity;"""
 TABLE_SIZE_ON_DISK = """SELECT ((sum(relpages)* 8) * 1024) AS
 size_relations FROM pg_class WHERE relkind IN ('r', 't');"""
