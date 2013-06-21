@@ -180,6 +180,7 @@ Configuration Example
         port: 8098
 
     Daemon:
+      user: newrelic
       pidfile: /var/run/newrelic/newrelic_plugin_agent.pid
 
     Logging:
