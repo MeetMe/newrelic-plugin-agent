@@ -30,7 +30,9 @@ Installation Instructions
 
 2. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/newrelic/newrelic_plugin_agent.cfg to /etc/newrelic/newrelic_plugin_agent.cfg and edit the configuration in that file.
 
-3. Run the app:
+3. If you use the default "newrelic" user from the sample configuration, ensure that the user exists and that the /var/run/newrelic and /var/log/newrelic directories are writable or owned by that user.
+
+4. Run the app:
 
     newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
 
