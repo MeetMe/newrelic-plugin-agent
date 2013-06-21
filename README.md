@@ -220,3 +220,4 @@ Troubleshooting
 - If the application installs but doesn't seem to be submitting status, check the logfile which at /tmp/newrelic_plugin_agent.log if the default example logging configuration is used.
 - If the agent starts but dies shortly after ensure that /var/log/newrelic and /var/run/newrelic are writable by the same user specified in the daemon section of the configuration file.
 - If the agent has died and won't restart, remove any files found in /var/run/newrelic/
+- If using the Apache HTTP plugin and your stats are blank, ensure the ExtendedStatus directive is on.
