@@ -22,8 +22,6 @@ for dir_path, dir_names, file_names in os.walk('var'):
     for file_name in file_names:
         data_files[install_path].append('%s/%s' % (dir_path, file_name))
 
-print data_files
-
 with open('MANIFEST.in', 'w') as handle:
     for path in data_files:
         for filename in data_files[path]:
