@@ -16,6 +16,10 @@ NewRelic platform. Currently supported backend systems are:
 - Redis
 - Riak
 
+Base Requirements
+-----------------
+The agent requires Python 2.6 or 2.7 and pip for installation. Individual plugin backends may require additional libraries and are detailed below.
+
 Installation Instructions
 -------------------------
 1. Install via pip*:
@@ -206,9 +210,11 @@ Configuration Example
 
 Troubleshooting
 ---------------
-If the installation does not install the "newrelic_plugin_agent" application in /usr/bin then it is likely that setuptools or distribute is not up to date. The following commands can be run to install distribute and pip for installing the application:
+- If the installation does not install the "newrelic_plugin_agent" application in /usr/bin then it is likely that setuptools or distribute is not up to date. The following commands can be run to install distribute and pip for installing the application:
 
     curl http://python-distribute.org/distribute_setup.py | python
     curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 
-If the application installs but doesn't seem to be submitting status, check the logfile which at /tmp/newrelic_plugin_agent.log if the default example logging configuration is used.
+- If the application installs but doesn't seem to be submitting status, check the logfile which at /tmp/newrelic_plugin_agent.log if the default example logging configuration is used.
+- If the agent starts but dies shortly after ensure that /var/log/newrelic and /var/run/newrelic are writable by the same user specified in the daemon section of the configuration file.
+- If the agent has died and won't restart, remove any files found in /var/run/newrelic/
