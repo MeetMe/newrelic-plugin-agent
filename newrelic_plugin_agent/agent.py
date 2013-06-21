@@ -6,8 +6,10 @@ import clihelper
 import json
 import logging
 import os
+from yaml import parser
 import requests
 import socket
+import sys
 import Queue as queue
 import threading
 import time
@@ -289,8 +291,11 @@ def main():
     clihelper.setup('newrelic_plugin_agent',
                     'New Relic Platform Plugin Agent',
                     __version__)
-    clihelper.run(NewRelicPluginAgent)
-
+    try:
+        clihelper.run(NewRelicPluginAgent)
+    except parser.ParserError as error:
+        logging.basicConfig(level=logging.CRITICAL)
+        LOGGER.critical('Parsing of configuration file failed: %s', error)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
