@@ -63,11 +63,6 @@ Enable the HTTPd server status page in the default virtual host. The following e
         Allow from all
     </Location>
 
-The agent requires the exteneded information to parse metrics.  If you are not seeing any metrics on your graphs for Apache verify that you have enable ExtendedStatus, the default is off so you must enable it.  In your global Apache HTTP configuration you need to enable exetended status using:
-
-ExtendedStatus On
-
-
 MongoDB Installation Nodes
 -------------------------
 You need to install the pymongo driver, either by running "pip install pymongo" or by following the "Installing Additional Requirements" above. Each database you wish to collect metrics for must be enumerated in the configuration.
@@ -86,7 +81,18 @@ The user specified must be a stats user.
 
 PostgreSQL Installation Notes
 -----------------------------
-The user specified must have the ability to query the PostgreSQL system catalog.
+By default user specified must superuser to get PostgreSQL directory listings. If you want to
+use this plugin without need of superuser permissions use `superuser: False` setting in
+configuration file e.g.:
+
+    postgresql:
+      host: localhost
+      port: 5432
+      user: newrelic
+      dbname: postgres
+      password: newrelic
+      superuser: False
+
 
 RabbitMQ Installation Notes
 ---------------------------
@@ -151,6 +157,7 @@ Configuration Example
         port: 5432
         user: postgres
         dbname: postgres
+        superuser: True
 
       rabbitmq:
         name: rabbitmq@localhost
