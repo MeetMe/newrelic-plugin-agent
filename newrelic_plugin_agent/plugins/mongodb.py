@@ -3,6 +3,7 @@ MongoDB Support
 
 """
 import datetime
+from pymongo import errors
 import logging
 import pymongo
 import time
@@ -169,9 +170,15 @@ class MongoDB(base.Plugin):
         databases = self.config.get('databases', list())
         for database in databases:
             db = client[database]
-            if database == databases[0]:
-                self.add_server_datapoints(db.command('serverStatus'))
-            self.add_datapoints(database, db.command('dbStats'))
+            if self.config.get('username'):
+                db.authenticate(self.config['username'],
+                                self.config.get('password'))
+            try:
+                if database == databases[0]:
+                    self.add_server_datapoints(db.command('serverStatus'))
+                self.add_datapoints(database, db.command('dbStats'))
+            except errors.OperationFailure as error:
+                LOGGER.critical('Could not fetch stats: %s', error)
 
     def poll(self):
         LOGGER.info('Polling MongoDB at %(host)s:%(port)i', self.config)

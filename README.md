@@ -65,12 +65,13 @@ Enable the HTTPd server status page in the default virtual host. The following e
 
 The agent requires the exteneded information to parse metrics.  If you are not seeing any metrics on your graphs for Apache verify that you have enable ExtendedStatus, the default is off so you must enable it.  In your global Apache HTTP configuration you need to enable exetended status using:
 
-ExtendedStatus On
-
+    ExtendedStatus On
 
 MongoDB Installation Nodes
 -------------------------
 You need to install the pymongo driver, either by running "pip install pymongo" or by following the "Installing Additional Requirements" above. Each database you wish to collect metrics for must be enumerated in the configuration.
+
+To use authentication, include the username and password configuration values, otherwise omit them.
 
 Nginx Installation Notes
 ------------------------
@@ -94,7 +95,7 @@ The user specified must have access to all virtual hosts you wish to monitor and
 
 Redis Installation Notes
 -----------------------------
-For Redis daemons that are password protected, add the password configuration value, otherwise omit it.
+For Redis daemons that are password protected, add the password configuration value, otherwise omit it. The Redis configuration section allows for multiple redis servers. The syntax to poll multiple servers is in the example below.
 
 Configuration Example
 ---------------------
@@ -125,6 +126,8 @@ Configuration Example
         name: hostname
         host: localhost
         port: 27017
+        username: foo
+        password: bar
         databases:
           - database_name_1
           - database_name_2
@@ -163,6 +166,11 @@ Configuration Example
         - name: localhost
           host: localhost
           port: 6379
+          db_count: 16
+          password: foobar
+        - name: localhost
+          host: localhost
+          port: 6380
           db_count: 16
           password: foobar
 
