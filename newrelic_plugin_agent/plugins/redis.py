@@ -149,7 +149,7 @@ class Redis(base.Plugin):
         try:
             connection.connect(params)
         except socket.error as error:
-            LOGGER.error('Error connecting to %s:%i - %s', error)
+            LOGGER.error('Error connecting to %s:%i - %s', params[0], params[1], error)
             return None
 
         if config.get('password'):
