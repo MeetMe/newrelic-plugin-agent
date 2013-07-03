@@ -76,13 +76,17 @@ class NewRelicPluginAgent(clihelper.Controller):
 
         """
 
-        thread = threading.Thread(target=self.thread_process,
-                                  kwargs={'config': config,
-                                          'name': plugin_name,
-                                          'plugin': plugin,
-                                          'poll_interval': self._wake_interval})
-        thread.run()
-        self.threads.append(thread)
+        if not isinstance(config, (list, tuple)):
+            config = [config]
+
+        for instance in config:
+            thread = threading.Thread(target=self.thread_process,
+                                      kwargs={'config': instance,
+                                              'name': plugin_name,
+                                              'plugin': plugin,
+                                              'poll_interval': self._wake_interval})
+            thread.run()
+            self.threads.append(thread)
 
     def process(self):
         """This method is called after every sleep interval. If the intention
