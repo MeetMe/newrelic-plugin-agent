@@ -17,6 +17,8 @@ class RabbitMQ(base.Plugin):
 
     DEFAULT_USER = 'guest'
     DEFAULT_PASSWORD = 'guest'
+    DEFAULT_HOST = 'localhost'
+    DEFAULT_PORT = 80
 
     DUMMY_STATS = {'ack': 0,
                    'deliver': 0,
@@ -342,4 +344,10 @@ class RabbitMQ(base.Plugin):
         :rtype: str
 
         """
-        return 'http://%(host)s:%(port)s/api' % self.config
+        port = self.config.get('port',self.DEFAULT_PORT)
+        secure = self.config.get('secure',False)
+        host = self.config.get('host',self.DEFAULT_HOST)
+        if secure:
+           return 'https://' + host + ':' + str(port) + '/api'
+        else:
+           return 'http://' + host + ':' + str(port) + '/api'
