@@ -9,7 +9,7 @@ data_files[base_path] = ['README.md']
 # etc dir
 for dir_path, dir_names, file_names in os.walk('etc'):
     install_path = '%s/%s' % (base_path, dir_path)
-    if install_path not in data_files:
+    if len(file_names) > 0 and install_path not in data_files:
         data_files[install_path] = list()
     for file_name in file_names:
         data_files[install_path].append('%s/%s' % (dir_path, file_name))
@@ -17,7 +17,7 @@ for dir_path, dir_names, file_names in os.walk('etc'):
 # var dir
 for dir_path, dir_names, file_names in os.walk('var'):
     install_path = '/%s' % dir_path
-    if dir_path not in data_files:
+    if len(file_names) > 0 and install_path not in data_files:
         data_files[install_path] = list()
     for file_name in file_names:
         data_files[install_path].append('%s/%s' % (dir_path, file_name))
