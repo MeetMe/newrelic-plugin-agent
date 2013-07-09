@@ -111,6 +111,7 @@ Configuration Example
     Application:
       license_key: REPLACE_WITH_REAL_KEY
       poll_interval: 60
+      #proxy: http://localhost:8080
 
       apache_httpd:
         name: hostname

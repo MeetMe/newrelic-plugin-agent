@@ -24,7 +24,7 @@ class NewRelicPluginAgent(clihelper.Controller):
     every minute and reports the state to NewRelic.
 
     """
-    IGNORE_KEYS = ['license_key', 'poll_interval']
+    IGNORE_KEYS = ['license_key', 'poll_interval', 'proxy']
     MAX_METRICS_PER_REQUEST = 10000
     PLATFORM_URL = 'https://platform-api.newrelic.com/platform/v1/metrics'
 
@@ -58,6 +58,20 @@ class NewRelicPluginAgent(clihelper.Controller):
         return {'host': socket.gethostname(),
                 'pid': os.getpid(),
                 'version': __version__}
+
+    @property
+    def proxies(self):
+        """Return the proxy used to access NewRelic.
+
+        :rtype: dict
+
+        """
+        if 'proxy' in self.application_config:
+            return {
+                'http': self.application_config['proxy'],
+                'https': self.application_config['proxy']
+            }
+        return None
 
     @property
     def license_key(self):
@@ -179,6 +193,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         try:
             response = requests.post(self.PLATFORM_URL,
                                      headers=self.http_headers,
+                                     proxies=self.proxies,
                                      data=json.dumps(body, ensure_ascii=False))
             LOGGER.debug('Response: %s: %r',
                          response.status_code,
