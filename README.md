@@ -93,7 +93,18 @@ The user specified must be a stats user.
 
 PostgreSQL Installation Notes
 -----------------------------
-The user specified must have the ability to query the PostgreSQL system catalog.
+By default user specified must superuser to get PostgreSQL directory listings. If you want to
+use this plugin without need of superuser permissions use `superuser: False` setting in
+configuration file e.g.:
+
+    postgresql:
+      host: localhost
+      port: 5432
+      user: newrelic
+      dbname: postgres
+      password: newrelic
+      superuser: False
+
 
 RabbitMQ Installation Notes
 ---------------------------
@@ -161,6 +172,7 @@ Configuration Example
         port: 5432
         user: postgres
         dbname: postgres
+        superuser: True
 
       rabbitmq:
         name: rabbitmq@localhost

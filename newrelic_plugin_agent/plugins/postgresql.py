@@ -74,7 +74,9 @@ class PostgreSQL(base.Plugin):
         self.add_statio_metrics(cursor)
         self.add_table_metrics(cursor)
         self.add_transaction_metrics(cursor)
-        self.add_wal_metrics(cursor)
+        # add_wal_metrics needs superuser to get directory listings, checks if user want's to omit that
+        if self.config.get('superuser', True):
+            self.add_wal_metrics(cursor)
 
     def add_database_metrics(self, cursor):
         cursor.execute(DATABASE)
