@@ -24,7 +24,7 @@ class NewRelicPluginAgent(clihelper.Controller):
     every minute and reports the state to NewRelic.
 
     """
-    IGNORE_KEYS = ['license_key', 'poll_interval', 'proxy']
+    IGNORE_KEYS = ['license_key', 'poll_interval', 'proxy', 'endpoint']
     MAX_METRICS_PER_REQUEST = 10000
     PLATFORM_URL = 'https://platform-api.newrelic.com/platform/v1/metrics'
 
@@ -42,6 +42,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         self.threads = list()
         self._wake_interval = self.application_config.get('poll_interval',
                                                           self.WAKE_INTERVAL)
+        self.endpoint = self.application_config.get('endpoint', self.PLATFORM_URL)
         self.http_headers = {'Accept': 'application/json',
                              'Content-Type': 'application/json',
                              'X-License-Key': self.license_key}
@@ -195,7 +196,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         body = {'agent': self.agent_data, 'components': components}
         LOGGER.debug(body)
         try:
-            response = requests.post(self.PLATFORM_URL,
+            response = requests.post(self.endpoint,
                                      headers=self.http_headers,
                                      proxies=self.proxies,
                                      data=json.dumps(body, ensure_ascii=False))
