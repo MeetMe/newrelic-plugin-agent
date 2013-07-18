@@ -35,27 +35,6 @@ for dir_path, dir_names, file_names in os.walk(python_lib_dir):
 if fixed:
     print 'Fixed a serious uninstallation problem in previous version'
 
-# etc dir
-for dir_path, dir_names, file_names in os.walk('etc'):
-    install_path = '%s/%s' % (base_path, dir_path)
-    if len(file_names) > 0 and install_path not in data_files:
-        data_files[install_path] = list()
-    for file_name in file_names:
-        data_files[install_path].append('%s/%s' % (dir_path, file_name))
-
-# var dir
-for dir_path, dir_names, file_names in os.walk('var'):
-    install_path = '/%s' % dir_path
-    if len(file_names) > 0 and install_path not in data_files:
-        data_files[install_path] = list()
-    for file_name in file_names:
-        data_files[install_path].append('%s/%s' % (dir_path, file_name))
-
-with open('MANIFEST.in', 'w') as handle:
-    for path in data_files:
-        for filename in data_files[path]:
-            handle.write('include %s\n' % filename)
-
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
 install_requires = ['clihelper>=1.7.0', 'requests', 'dnspython']
