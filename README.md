@@ -151,6 +151,7 @@ Configuration Example
 
       apache_httpd:
         name: hostname
+        scheme: http
         host: localhost
         port: 80
         path: /server-status

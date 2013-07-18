@@ -67,10 +67,16 @@ class ApacheHTTPD(base.Plugin):
                 else:
                     self.add_derive_value(self.KEYS[key], self.TYPES[key],
                                           value)
+        else:
+            LOGGER.error('Could not match any of the stats, please make ensure '
+                         'Apache HTTPd is configured correctly. If you report '
+                         'this as a bug, please include the full output of the '
+                         'status page from %s in your ticket',
+                         self.apache_stats_url)
 
     @property
     def apache_stats_url(self):
-        return 'http://%(host)s:%(port)s/%(path)s?auto' % self.config
+        return '%(scheme)s://%(host)s:%(port)s%(path)s?auto' % self.config
 
     def fetch_data(self):
         """Fetch the data from the ApacheHTTPD server
@@ -99,9 +105,17 @@ class ApacheHTTPD(base.Plugin):
     def poll(self):
         LOGGER.info('Polling ApacheHTTPD via %s', self.apache_stats_url)
         start_time = time.time()
+        if 'scheme' not in self.config:
+            self.config['scheme'] = 'http'
         self.derive = dict()
         self.gauge = dict()
         self.rate = dict()
-        self.add_datapoints(self.fetch_data())
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
+        data = self.fetch_data()
+        if data:
+            self.add_datapoints(data)
+            LOGGER.info('Polling complete in %.2f seconds',
+                        time.time() - start_time)
+        else:
+            LOGGER.error('No data was returned from Apache. Ensure '
+                         'configuration is correct and that %s is reachable '
+                         'by the agent', self.apache_stats_url)
