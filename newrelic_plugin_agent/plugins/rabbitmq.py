@@ -323,7 +323,8 @@ class RabbitMQ(base.Plugin):
         """
         kwargs = {'url': url,
                   'auth': (self.config.get('username', self.DEFAULT_USER),
-                           self.config.get('password', self.DEFAULT_PASSWORD))}
+                           self.config.get('password', self.DEFAULT_PASSWORD)),
+                  'verify': self.config.get('verify_ssl_cert', True)}
         if params:
             kwargs['params'] = params
 

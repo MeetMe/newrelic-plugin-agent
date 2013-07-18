@@ -183,7 +183,9 @@ class Riak(base.Plugin):
 
         """
         try:
-            response = requests.get(self.riak_stats_url)
+            response = requests.get(self.riak_stats_url,
+                                    verify=self.config.get('verify_ssl_cert',
+                                                           True))
         except requests.ConnectionError as error:
             LOGGER.error('Error polling Riak: %s', error)
             return {}

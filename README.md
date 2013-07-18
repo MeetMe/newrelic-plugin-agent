@@ -87,6 +87,8 @@ The agent requires the exteneded information to parse metrics.  If you are not s
 
     ExtendedStatus On
 
+If you are monitoring Apache HTTPd via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
+
 MongoDB Installation Nodes
 -------------------------
 You need to install the pymongo driver, either by running "pip install pymongo" or by following the "Installing Additional Requirements" above. Each database you wish to collect metrics for must be enumerated in the configuration.
@@ -100,6 +102,8 @@ Enable the nginx stub_status setting on the default site in your configuration. 
       location /nginx_stub_status {
         stub_status on;
       }
+
+If you are monitoring Nginx via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
 
 pgBouncer Installation Notes
 ----------------------------
@@ -119,14 +123,19 @@ configuration file e.g.:
       password: newrelic
       superuser: False
 
-
 RabbitMQ Installation Notes
 ---------------------------
 The user specified must have access to all virtual hosts you wish to monitor and should have either the Administrator tag or the Monitor tag.
 
+If you are monitoring RabbitMQ via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
+
 Redis Installation Notes
------------------------------
+------------------------
 For Redis daemons that are password protected, add the password configuration value, otherwise omit it. The Redis configuration section allows for multiple redis servers. The syntax to poll multiple servers is in the example below.
+
+Riak Installation Notes
+-----------------------
+If you are monitoring Riak via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
 
 Configuration Example
 ---------------------
@@ -143,11 +152,13 @@ Configuration Example
         host: localhost
         port: 80
         path: /server-status
+        #verify_ssl_cert: true
 
       couchdb:
         name: localhost
         host: localhost
         port: 5984
+        #verify_ssl_cert: true
 
       edgecast:
         name: My Edgecase Account
@@ -175,6 +186,7 @@ Configuration Example
         host: localhost
         port: 80
         path: /nginx_stub_status
+        #verify_ssl_cert: true
 
       pgbouncer:
         host: localhost
@@ -194,6 +206,7 @@ Configuration Example
         port: 15672
         username: guest
         password: guest
+        #verify_ssl_cert: true
 
       redis:
         - name: localhost
@@ -211,6 +224,7 @@ Configuration Example
         name: localhost
         host: localhost
         port: 8098
+        #verify_ssl_cert: true
 
     Daemon:
       user: newrelic

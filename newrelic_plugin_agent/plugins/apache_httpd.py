@@ -79,7 +79,9 @@ class ApacheHTTPD(base.Plugin):
 
         """
         try:
-            response = requests.get(self.apache_stats_url)
+            response = requests.get(self.apache_stats_url,
+                                    verify=self.config.get('verify_ssl_cert',
+                                                           True))
         except requests.ConnectionError as error:
             LOGGER.error('Error polling ApacheHTTPD: %s', error)
             return {}
