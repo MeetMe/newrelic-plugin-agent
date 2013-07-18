@@ -74,6 +74,34 @@ or
 
     pip install -e .[postgresql]
 
+Plugin Configuration Stanzas
+----------------------------
+Each plugin can support gathering data from a single or multiple targets. To support multiple targets for a plugin, you create a list of target stanzas:
+
+    plugin_name:
+      - name: target_name
+        host: localhost
+        foo: bar
+      - name: target_name
+        host: localhost
+        foo: bar
+
+While you can use the multi-target format for a plugins configuration stanza like:
+
+    plugin_name:
+      - name: target_name
+        host: localhost
+        foo: bar
+
+You can also use a single mapping like follows:
+
+    plugin_name:
+        name: target_name
+        host: localhost
+        foo: bar
+
+The fields for plugin configurations can vary due to a plugin's configuration requirements.
+
 Apache HTTPd Installation Notes
 -------------------------------
 Enable the HTTPd server status page in the default virtual host. The following example configuration snippet for Apache HTTPd 2.2 demonstrates how to do this:
@@ -106,7 +134,31 @@ MongoDB Installation Notes
 --------------------------
 You need to install the pymongo driver, either by running "pip install pymongo" or by following the "Installing Additional Requirements" above. Each database you wish to collect metrics for must be enumerated in the configuration.
 
-To use authentication, include the username and password configuration values, otherwise omit them.
+There are two configuration stanza formats for MongoDB. You must use one or the other, they can not be mixed. For non-authenticated polling, you can simply enumate the databases you would like stats from as a list:
+
+      mongodb:
+        name: hostname
+        host: localhost
+        port: 27017
+        databases:
+          - database_name_1
+          - database_name_2
+
+If your MongoDB server requires authentication, you must provide both admin credentials and database level credentials and the stanza is formatted as a nested array:
+
+      mongodb:
+        name: hostname
+        host: localhost
+        port: 27017
+        admin_username: foo
+        admin_password: bar
+        databases:
+          database_name_1:
+            username: foo
+            password: bar
+          database_name_2:
+            username: foo
+            password: bar
 
 Nginx Installation Notes
 ------------------------
@@ -161,67 +213,89 @@ Configuration Example
       #proxy: http://localhost:8080
 
       apache_httpd:
-        name: hostname
-        scheme: http
-        host: localhost
-        port: 80
-        path: /server-status
-        #verify_ssl_cert: true
+         -  name: hostname1
+            scheme: http
+            host: localhost
+            port: 80
+            path: /server-status
+            #verify_ssl_cert: true
+         -  name: hostname2
+            scheme: http
+            host: localhost
+            port: 80
+            path: /server-status
+            #verify_ssl_cert: true
 
       couchdb:
-        name: localhost
-        host: localhost
-        port: 5984
-        #verify_ssl_cert: true
+         -  name: localhost
+            host: localhost
+            port: 5984
+            #verify_ssl_cert: true
+         -  name: localhost
+            host: localhost
+            port: 5984
+            #verify_ssl_cert: true
 
       edgecast:
-        name: My Edgecase Account
-        account: ACCOUNT_NUMBER
-        token: API_TOKEN
+        - name: My Edgecase Account
+          account: ACCOUNT_NUMBER
+          token: API_TOKEN
 
       mongodb:
         name: hostname
         host: localhost
         port: 27017
-        username: foo
-        password: bar
+        admin_username: foo
+        admin_password: bar
         databases:
-          - database_name_1
-          - database_name_2
-          - etc
+          database_name_1:
+            username: foo
+            password: bar
+          database_name_2:
+            username: foo
+            password: bar
 
       memcached:
-        name: localhost
-        host: localhost
-        port: 11211
-        path: /path/to/unix/socket
+        - name: localhost
+          host: localhost
+          port: 11211
+          path: /path/to/unix/socket
+        - name: localhost
+          host: localhost
+          port: 11211
+          path: /path/to/unix/socket
 
       nginx:
-        name: hostname
-        host: localhost
-        port: 80
-        path: /nginx_stub_status
-        #verify_ssl_cert: true
+        - name: hostname
+          host: localhost
+          port: 80
+          path: /nginx_stub_status
+          #verify_ssl_cert: true
+        - name: hostname
+          host: localhost
+          port: 80
+          path: /nginx_stub_status
+          #verify_ssl_cert: true
 
       pgbouncer:
-        host: localhost
-        port: 6000
-        user: stats
+        - host: localhost
+          port: 6000
+          user: stats
 
       postgresql:
-        host: localhost
-        port: 5432
-        user: postgres
-        dbname: postgres
-        superuser: True
+        - host: localhost
+          port: 5432
+          user: postgres
+          dbname: postgres
+          superuser: True
 
       rabbitmq:
-        name: rabbitmq@localhost
-        host: localhost
-        port: 15672
-        username: guest
-        password: guest
-        #verify_ssl_cert: true
+        - name: rabbitmq@localhost
+          host: localhost
+          port: 15672
+          username: guest
+          password: guest
+          #verify_ssl_cert: true
 
       redis:
         - name: localhost
@@ -236,10 +310,10 @@ Configuration Example
           password: foobar
 
       riak:
-        name: localhost
-        host: localhost
-        port: 8098
-        #verify_ssl_cert: true
+        - name: localhost
+          host: localhost
+          port: 8098
+          #verify_ssl_cert: true
 
     Daemon:
       user: newrelic
