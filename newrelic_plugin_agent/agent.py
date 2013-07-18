@@ -292,9 +292,10 @@ class NewRelicPluginAgent(clihelper.Controller):
     def thread_process(self, name, plugin, config, poll_interval):
         LOGGER.debug('Polling %s, %r, %r, %r',
                      name, plugin, config, poll_interval)
-        obj = plugin(config, poll_interval, self.derive_last_interval.get(name))
+        instance_name = "%s:%s" % (name, config.get('name','unnamed'))
+        obj = plugin(config, poll_interval, self.derive_last_interval.get(instance_name))
         obj.poll()
-        self.publish_queue.put((name, obj.values(), obj.derive_last_interval))
+        self.publish_queue.put((instance_name, obj.values(), obj.derive_last_interval))                                                       
 
     @property
     def wake_interval(self):
