@@ -74,7 +74,7 @@ or
 
     pip install -e .[postgresql]
 
-Apache HTTPd Installation Nodes
+Apache HTTPd Installation Notes
 -------------------------------
 Enable the HTTPd server status page in the default virtual host. The following example configuration snippet for Apache HTTPd demonstrates how to do this:
 
@@ -91,8 +91,12 @@ The agent requires the exteneded information to parse metrics.  If you are not s
 
 If you are monitoring Apache HTTPd via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
 
-MongoDB Installation Nodes
--------------------------
+Memcached Installation Notes
+----------------------------
+The memcached plugin can communicate either over UNIX domain sockets using the path configuration variable or TCP/IP using the host and port variables. Do not include both.
+
+MongoDB Installation Notes
+--------------------------
 You need to install the pymongo driver, either by running "pip install pymongo" or by following the "Installing Additional Requirements" above. Each database you wish to collect metrics for must be enumerated in the configuration.
 
 To use authentication, include the username and password configuration values, otherwise omit them.
@@ -183,6 +187,7 @@ Configuration Example
         name: localhost
         host: localhost
         port: 11211
+        path: /path/to/unix/socket
 
       nginx:
         name: hostname

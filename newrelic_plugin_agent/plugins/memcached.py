@@ -3,6 +3,7 @@ memcached
 
 """
 import logging
+from os import path
 import socket
 import time
 
@@ -96,18 +97,39 @@ class Memcached(base.Plugin):
         self.add_gauge_value('Command/Hit Ratio/%s' % name, '', ratio)
 
     def connect(self):
-        """Create a socket and connect it to the memcached daemon.
+        """Top level interface to create a socket and connect it to the
+        memcached daemon.
 
         :rtype: socket
 
         """
-        connection = socket.socket()
         try:
+            connection = self._connect()
+        except socket.error as error:
+            LOGGER.error('Error connecting to memcached: %s', error)
+        else:
+            return connection
+
+    def _connect(self):
+        """Low level interface to create a socket and connect it to the
+        memcached daemon.
+
+        :rtype: socket
+
+        """
+        if 'path' in self.config:
+            if path.exists(self.config['path']):
+                LOGGER.debug('Connecting to UNIX socket: %s',
+                             self.config['path'])
+                connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                connection.connect(self.config['path'])
+            else:
+                LOGGER.error('Memcached UNIX socket path does not exist: %s',
+                             self.config['path'])
+        else:
+            connection = socket.socket()
             connection.connect((self.config.get('host', self.DEFAULT_HOST),
                                 self.config.get('port', self.DEFAULT_PORT)))
-        except socket.error as error:
-            LOGGER.error('Error connecting to %s:%i - %s', error)
-            return None
         return connection
 
     def fetch_data(self, connection):
@@ -151,15 +173,16 @@ class Memcached(base.Plugin):
 
         # Fetch the data from Memcached
         connection = self.connect()
-        self.send_command(connection)
-        data = self.fetch_data(connection)
-        connection.close()
-        del connection
-
-        # Create all of the metrics
-        self.add_datapoints(self.process_data(data))
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
+        if self.send_command(connection):
+            data = self.fetch_data(connection)
+            connection.close()
+            del connection
+            # Create all of the metrics
+            self.add_datapoints(self.process_data(data))
+            LOGGER.info('Polling complete in %.2f seconds',
+                        time.time() - start_time)
+        else:
+            LOGGER.error('Unsuccessful attempt to collect stats from memcached')
 
     def process_data(self, data):
         """Loop through all the rows and parse each line, looking to see if it
@@ -198,4 +221,9 @@ class Memcached(base.Plugin):
         :param socket connection: The connection
 
         """
-        connection.send("stats\n")
+        try:
+            connection.send("stats\n")
+        except AttributeError:
+            LOGGER.error('Did not connect to memcached successfully')
+            return False
+        return True
