@@ -76,7 +76,7 @@ or
 
 Apache HTTPd Installation Notes
 -------------------------------
-Enable the HTTPd server status page in the default virtual host. The following example configuration snippet for Apache HTTPd demonstrates how to do this:
+Enable the HTTPd server status page in the default virtual host. The following example configuration snippet for Apache HTTPd 2.2 demonstrates how to do this:
 
     <Location /server-status>
         SetHandler server-status
@@ -85,7 +85,14 @@ Enable the HTTPd server status page in the default virtual host. The following e
         Allow from all
     </Location>
 
-The agent requires the exteneded information to parse metrics.  If you are not seeing any metrics on your graphs for Apache verify that you have enable ExtendedStatus, the default is off so you must enable it.  In your global Apache HTTP configuration you need to enable exetended status using:
+For HTTPd 2.4, it should look something like:
+
+    <Location /server-status>
+        SetHandler server-status
+        Require ip 127.0.0.1
+    </Location>
+
+The agent requires the extended information to parse metrics.  If you are not seeing any metrics on your graphs for Apache verify that you have enable ExtendedStatus, the default is off so you must enable it.  In your global Apache HTTP configuration you need to enable exetended status using:
 
     ExtendedStatus On
 
