@@ -16,6 +16,12 @@ NewRelic platform. Currently supported backend systems are:
 - Redis
 - Riak
 
+IMPORTANT
+---------
+Version 1.0.12 has a *SERIOUS* uninstallation bug in the file manifest that will remove all the files on your filesystem if you try and do a pip remove newrelic_plugin_agent.
+
+Version 1.0.13 will fix this on a pip upgrade. For now, run the python script titled "fix_removal.py" to clean up the erroneous entries in the installed-files.txt manifest file in your python site-packages directory.
+
 Base Requirements
 -----------------
 The agent requires Python 2.6 or 2.7 and pip for installation. Individual plugin backends may require additional libraries and are detailed below.
