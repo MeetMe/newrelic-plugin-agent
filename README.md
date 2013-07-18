@@ -22,6 +22,10 @@ Version 1.0.12 has a *SERIOUS* uninstallation bug in the file manifest that will
 
 Version 1.0.13 will fix this on a pip upgrade. For now, run the python script titled "fix_removal.py" to clean up the erroneous entries in the installed-files.txt manifest file in your python site-packages directory.
 
+You can run this script manually using using curl and python:
+
+    curl https://gist.github.com/gmr/6031454/raw/d6a782691729a0cfb549f71bd2632d0c6dcfb0c8/fix_nrp_manifest.py | python
+
 Base Requirements
 -----------------
 The agent requires Python 2.6 or 2.7 and pip for installation. Individual plugin backends may require additional libraries and are detailed below.
@@ -49,7 +53,7 @@ Sample configuration and init.d scripts are installed in /opt/newrelic_plugin_ag
 Installing Additional Requirements
 ----------------------------------
 
-To use the MongoDB, pgBouncer or PostgreSQL plugin you must install the psycopg2 library. To easily do
+To use the MongoDB the mongodb library is required. For the pgBouncer or PostgreSQL plugin you must install the psycopg2 library. To easily do
 this, make sure you have the latest version of pip installed (http://www.pip-installer.org/). This should be done after installing the agent itself.
 
 Once installed, from inside the source directory run the following command:
