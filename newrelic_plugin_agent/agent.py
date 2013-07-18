@@ -60,20 +60,6 @@ class NewRelicPluginAgent(clihelper.Controller):
                 'version': __version__}
 
     @property
-    def proxies(self):
-        """Return the proxy used to access NewRelic.
-
-        :rtype: dict
-
-        """
-        if 'proxy' in self.application_config:
-            return {
-                'http': self.application_config['proxy'],
-                'https': self.application_config['proxy']
-            }
-        return None
-
-    @property
     def license_key(self):
         """Return the NewRelic license key from the configuration values.
 
@@ -158,6 +144,20 @@ class NewRelicPluginAgent(clihelper.Controller):
 
             self.min_max_values[guid][name][metric] = min_val, max_val
 
+    @property
+    def proxies(self):
+        """Return the proxy used to access NewRelic.
+
+        :rtype: dict
+
+        """
+        if 'proxy' in self.application_config:
+            return {
+                'http': self.application_config['proxy'],
+                'https': self.application_config['proxy']
+            }
+        return None
+
     def send_data_to_newrelic(self):
         metrics = 0
         components = list()
@@ -198,7 +198,9 @@ class NewRelicPluginAgent(clihelper.Controller):
             response = requests.post(self.endpoint,
                                      headers=self.http_headers,
                                      proxies=self.proxies,
-                                     data=json.dumps(body, ensure_ascii=False))
+                                     data=json.dumps(body, ensure_ascii=False),
+                                     verify=self.config.get('verify_ssl_cert',
+                                                            True))
             LOGGER.debug('Response: %s: %r',
                          response.status_code,
                          response.content.strip())
@@ -294,7 +296,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         instance_name = "%s:%s" % (name, config.get('name','unnamed'))
         obj = plugin(config, poll_interval, self.derive_last_interval.get(instance_name))
         obj.poll()
-        self.publish_queue.put((instance_name, obj.values(), obj.derive_last_interval))                                                       
+        self.publish_queue.put((instance_name, obj.values(), obj.derive_last_interval))
 
     @property
     def wake_interval(self):
