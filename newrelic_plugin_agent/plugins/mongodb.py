@@ -52,14 +52,14 @@ class MongoDB(base.Plugin):
         self.add_derive_value('Asserts/Message', '', asserts.get('msg', 0))
         self.add_derive_value('Asserts/User', '', asserts.get('user', 0))
         self.add_derive_value('Asserts/Rollovers', '',
-                             asserts.get('rollovers', 0))
+                              asserts.get('rollovers', 0))
 
         flush = stats.get('backgroundFlushing', dict())
         self.add_derive_timing_value('Background Flushes',
                                      'ms',
-                                     flush.get('flushes'),
-                                     flush.get('total_ms'),
-                                     flush.get('last_ms'))
+                                     flush.get('flushes', 0),
+                                     flush.get('total_ms', 0),
+                                     flush.get('last_ms', 0))
         self.add_gauge_value('Seconds since last flush',
                              'sec',
                              (datetime.datetime.now() -
@@ -72,8 +72,8 @@ class MongoDB(base.Plugin):
         self.add_gauge_value('Connections/Current', '', conn.get('current', 0))
 
         cursors = stats.get('cursors', dict())
-        self.add_gauge_value('Cursors/Open', '', cursors.get('totalOpen'))
-        self.add_derive_value('Cursors/Timed Out', '', cursors.get('timedOut'))
+        self.add_gauge_value('Cursors/Open', '', cursors.get('totalOpen', 0))
+        self.add_derive_value('Cursors/Timed Out', '', cursors.get('timedOut', 0))
 
         dur = stats.get('dur', dict())
         self.add_gauge_value('Durability/Commits in Write Lock', '',
@@ -85,7 +85,7 @@ class MongoDB(base.Plugin):
         self.add_gauge_value('Durability/Journal MB Written', 'mb',
                              dur.get('journaledMB', 0))
         self.add_gauge_value('Durability/Data File MB Written', 'mb',
-                             dur.get('writeToDataFilesMB'), 0)
+                             dur.get('writeToDataFilesMB', 0))
 
         timems = dur.get('timeMs', dict())
         self.add_gauge_value('Durability/Timings/Duration Measured', 'ms',
@@ -138,7 +138,8 @@ class MongoDB(base.Plugin):
                              mem.get('virtual', 0))
 
         net = stats.get('network', dict())
-        self.add_derive_value('Network/Requests', '', net.get('numRequests'))
+        self.add_derive_value('Network/Requests', '',
+                              net.get('numRequests', 0))
         self.add_derive_value('Network/Transfer/In', 'bytes',
                               net.get('bytesIn', 0))
         self.add_derive_value('Network/Transfer/Out', 'bytes',
