@@ -3,7 +3,7 @@ from distutils import sysconfig
 
 # Check to see if the previous version was installed and clean up
 # installed-files.txt
-prune = ['/', 'var/', 'var/run/', 'var/log/']
+prune = ['var/', 'var/run/', 'var/log/']
 python_lib_dir = sysconfig.get_python_lib()
 fixed = False
 for dir_path, dir_names, file_names in os.walk(python_lib_dir):

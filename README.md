@@ -44,15 +44,17 @@ Installation Instructions
 
 2. Copy the configuration file example from /opt/newrelic_plugin_agent/etc/newrelic/newrelic_plugin_agent.cfg to /etc/newrelic/newrelic_plugin_agent.cfg and edit the configuration in that file.
 
-3. If you use the default "newrelic" user from the sample configuration, ensure that the user exists and that the /var/run/newrelic and /var/log/newrelic directories are writable or owned by that user.
+3. Make a /var/log/newrelic directory and make sure it is writable by the user specified in the configuration file
 
-4. Run the app:
+4. Make a /var/run/newrelic directory and make sure it is writable by the user specified in the configuration file
+
+5. Run the app:
 
     newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
 
 Where -f is to run it in the foreground instead of as a daemon.
 
-Sample configuration and init.d scripts are installed in /opt/newrelic_plugin_agent
+Sample configuration and init.d scripts are installed to /opt/newrelic_plugin_agent
 
 Installing Additional Requirements
 ----------------------------------

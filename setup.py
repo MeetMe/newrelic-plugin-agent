@@ -1,15 +1,10 @@
 import os
-from os import path
 from setuptools import setup
 from distutils import sysconfig
 
-base_path = '/opt/newrelic_plugin_agent'
-data_files = dict()
-data_files[base_path] = ['README.md']
-
 # Check to see if the previous version was installed and clean up
 # installed-files.txt
-prune = ['/', 'var/', 'var/run/', 'var/log/']
+prune = ['var/', 'var/run/', 'var/log/']
 python_lib_dir = sysconfig.get_python_lib()
 fixed = False
 for dir_path, dir_names, file_names in os.walk(python_lib_dir):
@@ -35,6 +30,15 @@ for dir_path, dir_names, file_names in os.walk(python_lib_dir):
 if fixed:
     print 'Fixed a serious uninstallation problem in previous version'
 
+
+base_path = '%s/opt/newrelic_plugin_agent' % os.getenv('VIRTUAL_ENV', '')
+data_files = dict()
+data_files[base_path] = ['LICENSE',
+                         'README.md',
+                         'etc/init.d/newrelic_plugin_agent.deb',
+                         'etc/init.d/newrelic_plugin_agent.rhel',
+                         'etc/newrelic/newrelic_plugin_agent.cfg',
+                         'fix_removal.py']
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
 install_requires = ['clihelper>=1.7.0', 'requests', 'dnspython']
