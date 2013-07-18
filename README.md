@@ -231,10 +231,14 @@ Configuration Example
             host: localhost
             port: 5984
             #verify_ssl_cert: true
+            #username: foo
+            #password: bar
          -  name: localhost
             host: localhost
             port: 5984
             #verify_ssl_cert: true
+            #username: foo
+            #password: bar
 
       edgecast:
         - name: My Edgecase Account

@@ -78,10 +78,13 @@ class CouchDB(base.Plugin):
         :rtype: dict
 
         """
+        kwargs = {'url': self.couchdb_stats_url,
+                  'verify': self.config.get('verify_ssl_cert', True)}
+        if 'username' in self.config and 'password' in self.config:
+            kwargs['auth'] = (self.config['username'], self.config['password'])
+
         try:
-            response = requests.get(self.couchdb_stats_url,
-                                    verify=self.config.get('verify_ssl_cert',
-                                                           True))
+            response = requests.get(**kwargs)
         except requests.ConnectionError as error:
             LOGGER.error('Error polling CouchDB: %s', error)
             return {}
