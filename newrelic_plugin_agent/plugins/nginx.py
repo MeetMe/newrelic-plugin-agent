@@ -89,6 +89,10 @@ class Nginx(base.Plugin):
         self.derive = dict()
         self.gauge = dict()
         self.rate = dict()
-        self.add_datapoints(self.fetch_data())
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
+        try:
+            self.add_datapoints(self.fetch_data())
+        except TypeError as error:
+            LOGGER.error('Skipping stats run due to error: %s', error)
+        else:
+            LOGGER.info('Polling complete in %.2f seconds',
+                        time.time() - start_time)
