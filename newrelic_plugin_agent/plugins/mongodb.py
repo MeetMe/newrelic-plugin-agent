@@ -167,17 +167,51 @@ class MongoDB(base.Plugin):
         """Fetch the data from the MongoDB server and add the datapoints
 
         """
-        client = self.connect()
         databases = self.config.get('databases', list())
+        if isinstance(databases, list):
+            self.get_and_add_db_list(databases)
+        else:
+            self.get_and_add_db_with_auth(databases)
+
+    def get_and_add_db_list(self, databases):
+        """Handle the list of databases while supporting authentication for
+        the admin if needed
+
+        :param list databases: The database list
+
+        """
+        client = self.connect()
         for database in databases:
             db = client[database]
-            if self.config.get('username'):
-                db.authenticate(self.config['username'],
-                                self.config.get('password'))
             try:
-                if database == databases[0]:
+                if database == database[0]:
+                    if self.config.get('admin_username'):
+                        db.authenticate(self.config['admin_username'],
+                                        self.config.get('admin_password'))
                     self.add_server_datapoints(db.command('serverStatus'))
                 self.add_datapoints(database, db.command('dbStats'))
+            except errors.OperationFailure as error:
+                LOGGER.critical('Could not fetch stats: %s', error)
+
+    def get_and_add_db_with_auth(self, databases):
+        """Handle the nested database structure with usernnames and password.
+
+        :param dict databases: The databases data structure
+
+        """
+        client = self.connect()
+        db_names = databases.keys()
+        for database in db_names:
+            db = client[database]
+            try:
+                if database == db_names[0]:
+                    if self.config.get('admin_username'):
+                        db.authenticate(self.config['admin_username'],
+                                        self.config.get('admin_password'))
+                    self.add_server_datapoints(db.command('serverStatus'))
+                if 'username' in databases[database]:
+                    db.authenticate(databases[database]['username'],
+                                    databases[database].get('password'))
             except errors.OperationFailure as error:
                 LOGGER.critical('Could not fetch stats: %s', error)
 
