@@ -9,7 +9,6 @@ import os
 from yaml import parser
 import requests
 import socket
-import sys
 import Queue as queue
 import threading
 import time
