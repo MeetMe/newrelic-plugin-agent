@@ -5,6 +5,9 @@ rabbitmq
 import logging
 import requests
 import time
+import urllib
+from dns import resolver
+from dns import reversename
 
 from newrelic_plugin_agent.plugins import base
 
@@ -27,6 +30,8 @@ class RabbitMQ(base.Plugin):
                    'get_no_ack': 0,
                    'publish': 0,
                    'redeliver': 0}
+
+    dns_cache = dict()
 
     def add_node_datapoints(self, node_data, queue_data, channel_data):
         """Add all of the data points for a node
@@ -158,7 +163,6 @@ class RabbitMQ(base.Plugin):
         :param list queue_data: The full stack of queue metrics
 
         """
-        consumers = 0
         keys = ['consumers', 'active_consumers', 'idle_consumers']
         count, total, min_val, max_val, values = self.initialize_counters(keys)
         del keys[2]
@@ -206,15 +210,24 @@ class RabbitMQ(base.Plugin):
         :param list queue_data: The raw queue data list
 
         """
-        available, deliver, publish, redeliver, unacked = 0, 0, 0, 0, 0
-        count = 0
-        for queue in queue_data:
-            count += 1
+        available, consumers, deliver, publish, redeliver, unacked = \
+            0, 0, 0, 0, 0, 0
+        for count, queue in enumerate(queue_data):
+            if self.detailed:
+                LOGGER.info('Querying info for queue %i of %i',
+                            count + 1, len(queue_data))
+                queue.update(self.fetch_queue_details(queue['vhost'],
+                                                      queue['name']))
+
             message_stats = queue.get('message_stats', dict())
             if not message_stats:
                 message_stats = self.DUMMY_STATS
 
             vhost = 'Default' if queue['vhost'] == '/' else queue['vhost']
+            base_name = 'Queue/%s/%s' % (vhost, queue['name'])
+            self.add_gauge_value('%s/Consumers' % base_name, '',
+                                 queue.get('consumers', 0))
+
             base_name = 'Queue/%s/%s/Messages' % (vhost, queue['name'])
             self.add_derive_value('%s/Acknowledged' % base_name, '',
                                   message_stats.get('ack', 0))
@@ -243,6 +256,21 @@ class RabbitMQ(base.Plugin):
             redeliver += message_stats.get('redeliver', 0)
             unacked += queue.get('messages_unacknowledged', 0)
 
+            if self.detailed:
+                consumers = dict()
+                for channel in queue.get('consumer_details', {}):
+                    host = self.consumer_host(channel)
+                    if host not in consumers:
+                        consumers[host] = 0
+                    LOGGER.info('Consumer Host: %s', host)
+                    consumers[host] += 1
+
+                for consumer in consumers:
+                    stat_name = 'Queue/%s/%s/Consumer Host/%s' % \
+                                (vhost, queue['name'], consumer)
+                    LOGGER.info('Stat: %s', stat_name)
+                    self.add_gauge_value(stat_name, '', consumers[consumer])
+
         # Summary stats
         self.add_gauge_value('Summary/Messages/Available', '',
                              available, count=count)
@@ -255,36 +283,72 @@ class RabbitMQ(base.Plugin):
         self.add_gauge_value('Summary/Messages/Unacknowledged', '',
                              unacked, count=count)
 
-    def http_get(self, url):
+    def consumer_host(self, channel):
+        """Return the consumer hostname if configured, doing
+        reverse DNS and caching the result in the module level.
+
+        :param dict channel: The channel details
+        :rtype: str
+
+        """
+        name = channel['channel_details']['name']
+        host = name[0:name.find(':')]
+        if not self.config.get('resolve_dns', False):
+            return host
+        if host not in RabbitMQ.dns_cache:
+            address = reversename.from_address(host)
+            try:
+                host = resolver.query(address, 'PTR')[0]
+            except (resolver.NXDOMAIN, IndexError):
+                pass
+        RabbitMQ.dns_cache[host] = host
+        return RabbitMQ.dns_cache[host]
+
+    @property
+    def detailed(self):
+        """Return if the stats should include the detailed
+        stats.
+
+        :rtype: bool
+
+        """
+        return self.config.get('detailed', False)
+
+    def http_get(self, url, params=None):
         """Make a HTTP request for the URL.
 
         :param str url: The URL to request
+        :param dict params: Get query string parameters
 
         """
+        kwargs = {'url': url,
+                  'auth': (self.config.get('username', self.DEFAULT_USER),
+                           self.config.get('password', self.DEFAULT_PASSWORD))}
+        if params:
+            kwargs['params'] = params
+
         try:
-            return requests.get(url,
-                                auth=(self.config.get('username',
-                                                      self.DEFAULT_USER),
-                                      self.config.get('password',
-                                                      self.DEFAULT_PASSWORD)))
+            return self.requests_session.get(**kwargs)
         except requests.ConnectionError as error:
             LOGGER.error('Error fetching data from %s: %s', url, error)
             return None
 
-    def fetch_data(self, data_type):
+    def fetch_data(self, data_type, columns=None):
         """Fetch the data from the RabbitMQ server for the specified data type
 
+        :param str data_type: The type of data to query
+        :param list columns: Ask for specific columns
         :rtype: list
 
         """
         url = '%s/%s' % (self.rabbitmq_base_url, data_type)
-        response = self.http_get(url)
+        params = {'columns': ','.join(columns)} if columns else None
+        response = self.http_get(url, params)
         if not response or response.status_code != 200:
             if response:
                 LOGGER.error('Error response from %s (%s): %s', url,
                              response.status_code, response.content)
             return list()
-
         try:
             return response.json()
         except Exception as error:
@@ -313,12 +377,20 @@ class RabbitMQ(base.Plugin):
         :rtype: list
 
         """
+        if self.config.get('detailed', False):
+            return self.fetch_data('queues', ['name', 'vhost', 'node'])
         return self.fetch_data('queues')
+
+    def fetch_queue_details(self, vhost, queue):
+        return self.fetch_data('queues/%s/%s' % (urllib.quote(vhost, ''),
+                                                 queue))
 
     def poll(self):
         """Poll the RabbitMQ server"""
         LOGGER.info('Polling RabbitMQ via %s', self.rabbitmq_base_url)
         start_time = time.time()
+
+        self.requests_session = requests.Session()
 
         # Initialize the values each iteration
         self.derive = dict()

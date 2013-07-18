@@ -56,12 +56,14 @@ with open('MANIFEST.in', 'w') as handle:
         for filename in data_files[path]:
             handle.write('include %s\n' % filename)
 
+
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
-install_requires = ['clihelper>=1.7.0', 'requests']
+install_requires = ['clihelper>=1.7.0', 'requests', 'dnspython']
 tests_require = []
 extras_require = {'mongodb': ['pymongo'],
                   'pgbouncer': ['psycopg2'],
                   'postgresql': ['psycopg2']}
+
 
 setup(name='newrelic_plugin_agent',
       version='1.0.13',
