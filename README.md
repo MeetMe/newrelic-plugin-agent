@@ -30,6 +30,10 @@ Base Requirements
 -----------------
 The agent requires Python 2.6 or 2.7 and pip for installation. Individual plugin backends may require additional libraries and are detailed below.
 
+Configuration File Note
+-----------------------
+The configuration file uses YAML as its format. Most tickets for non-working installs are due to configuration file formatting errors. Please make sure you are properly formatting your configuration file prior to submitting a ticket. YAML is a whitespace dependent markup format. More information on writing proper YAML can be found at http://yaml.org.
+
 Installation Instructions
 -------------------------
 1. Install via pip*:
