@@ -191,6 +191,10 @@ class NewRelicPluginAgent(clihelper.Controller):
         JSON encoded POST body.
 
         """
+        if not metrics:
+            LOGGER.warning('No metrics to send to NewRelic this interval')
+            return
+
         LOGGER.info('Sending %i metrics to NewRelic', metrics)
         body = {'agent': self.agent_data, 'components': components}
         LOGGER.debug(body)
