@@ -38,7 +38,7 @@ data_files[base_path] = ['LICENSE',
                          'etc/init.d/newrelic_plugin_agent.deb',
                          'etc/init.d/newrelic_plugin_agent.rhel',
                          'etc/newrelic/newrelic_plugin_agent.cfg',
-                         'etc/apc-nrp.php',
+                         'apc-nrp.php',
                          'fix_removal.py']
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
@@ -50,7 +50,7 @@ extras_require = {'mongodb': ['pymongo'],
 
 
 setup(name='newrelic_plugin_agent',
-      version='1.0.13',
+      version='1.0.14',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic_plugin_agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],

@@ -1,7 +1,7 @@
-include etc/apc-nrp.php
 include fix_removal.py
 include LICENSE
 include README.md
+include apc-nrp.php
 include etc/init.d/newrelic_plugin_agent.deb
 include etc/init.d/newrelic_plugin_agent.rhel
 include etc/newrelic/newrelic_plugin_agent.cfg
