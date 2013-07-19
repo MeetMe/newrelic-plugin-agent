@@ -59,7 +59,9 @@ class Nginx(base.Plugin):
 
     @property
     def nginx_stats_url(self):
-        return 'http://%(host)s:%(port)s/%(path)s' % self.config
+        if 'scheme' not in self.config:
+            self.config['scheme'] = 'http'
+        return '%{scheme}://%(host)s:%(port)s/%(path)s' % self.config
 
     def fetch_data(self):
         """Fetch the data from the Nginx server for the specified data type
@@ -67,10 +69,13 @@ class Nginx(base.Plugin):
         :rtype: str
 
         """
+        kwargs = {'url': self.nginx_stats_url,
+                  'verify': self.config.get('verify_ssl_cert', True)}
+        if 'username' in self.config and 'password' in self.config:
+            kwargs['auth'] = (self.config['username'], self.config['password'])
+
         try:
-            response = requests.get(self.nginx_stats_url,
-                                    verify=self.config.get('verify_ssl_cert',
-                                                           True))
+            response = requests.get(**kwargs)
         except requests.ConnectionError as error:
             LOGGER.error('Error polling Nginx: %s', error)
             return {}

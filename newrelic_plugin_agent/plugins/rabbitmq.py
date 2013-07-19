@@ -417,9 +417,9 @@ class RabbitMQ(base.Plugin):
         :rtype: str
 
         """
-        port = self.config.get('port',self.DEFAULT_PORT)
-        secure = self.config.get('secure',False)
-        host = self.config.get('host',self.DEFAULT_HOST)
+        port = self.config.get('port', self.DEFAULT_PORT)
+        secure = self.config.get('secure', False)
+        host = self.config.get('host', self.DEFAULT_HOST)
         if secure:
            return 'https://' + host + ':' + str(port) + '/api'
         else:

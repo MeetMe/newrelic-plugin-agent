@@ -174,7 +174,9 @@ class Riak(base.Plugin):
 
     @property
     def riak_stats_url(self):
-        return 'http://%(host)s:%(port)s/stats' % self.config
+        if 'scheme' not in self.config:
+            self.config['scheme'] = 'http'
+        return '%{scheme}://%(host)s:%(port)s/stats' % self.config
 
     def fetch_data(self):
         """Fetch the data from the Riak server for the specified data type
@@ -182,10 +184,13 @@ class Riak(base.Plugin):
         :rtype: dict
 
         """
+        kwargs = {'url': self.riak_stats_url,
+                  'verify': self.config.get('verify_ssl_cert', True)}
+        if 'username' in self.config and 'password' in self.config:
+            kwargs['auth'] = (self.config['username'], self.config['password'])
+
         try:
-            response = requests.get(self.riak_stats_url,
-                                    verify=self.config.get('verify_ssl_cert',
-                                                           True))
+            response = requests.get(**kwargs)
         except requests.ConnectionError as error:
             LOGGER.error('Error polling Riak: %s', error)
             return {}

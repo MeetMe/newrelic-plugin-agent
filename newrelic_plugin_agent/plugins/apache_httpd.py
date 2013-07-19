@@ -76,6 +76,8 @@ class ApacheHTTPD(base.Plugin):
 
     @property
     def apache_stats_url(self):
+        if 'scheme' not in self.config:
+            self.config['scheme'] = 'http'
         return '%(scheme)s://%(host)s:%(port)s%(path)s?auto' % self.config
 
     def fetch_data(self):
@@ -84,10 +86,13 @@ class ApacheHTTPD(base.Plugin):
         :rtype: str
 
         """
+        kwargs = {'url': self.apache_stats_url,
+                  'verify': self.config.get('verify_ssl_cert', True)}
+        if 'username' in self.config and 'password' in self.config:
+            kwargs['auth'] = (self.config['username'], self.config['password'])
+
         try:
-            response = requests.get(self.apache_stats_url,
-                                    verify=self.config.get('verify_ssl_cert',
-                                                           True))
+            response = requests.get(**kwargs)
         except requests.ConnectionError as error:
             LOGGER.error('Error polling ApacheHTTPD: %s', error)
             return {}
@@ -105,8 +110,6 @@ class ApacheHTTPD(base.Plugin):
     def poll(self):
         LOGGER.info('Polling ApacheHTTPD via %s', self.apache_stats_url)
         start_time = time.time()
-        if 'scheme' not in self.config:
-            self.config['scheme'] = 'http'
         self.derive = dict()
         self.gauge = dict()
         self.rate = dict()
