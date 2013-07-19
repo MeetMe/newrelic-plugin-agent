@@ -13,7 +13,7 @@ if site.USER_SITE:
 try:
     import newrelic_plugin_agent
 except ImportError:
-    newrelic_plugin_agent
+    newrelic_plugin_agent = None
 
 if newrelic_plugin_agent:
     package_directories.append(path.abspath(path.dirname(newrelic_plugin_agent.__file__) + '/..'))
