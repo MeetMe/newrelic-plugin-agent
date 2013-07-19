@@ -70,6 +70,8 @@ class CouchDB(base.Plugin):
 
     @property
     def couchdb_stats_url(self):
+        if 'scheme' not in self.config:
+            self.config['scheme'] = 'http'
         return '%(scheme)s://%(host)s:%(port)s/_stats' % self.config
 
     def fetch_data(self):
