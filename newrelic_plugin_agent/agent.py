@@ -287,6 +287,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 self.poll_plugin(plugin, riak.Riak,
                                  self.application_config.get(plugin))
 
+            elif plugin == 'uwsgi':
+                if 'uwsgi' not in globals():
+                    from newrelic_plugin_agent.plugins import uwsgi
+                self.poll_plugin(plugin, uwsgi.UWSGI,
+                                 self.application_config.get(plugin))
+
     @property
     def threads_running(self):
         for thread in self.threads:

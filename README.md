@@ -100,7 +100,7 @@ You can also use a single mapping like follows:
         host: localhost
         foo: bar
 
-The fields for plugin configurations can vary due to a plugin's configuration requirements.
+The fields for plugin configurations can vary due to a plugin's configuration requirements. The name value in each stanza is only required when using multiple targets in a plugin. If it is only a single target, the name will be taken from the server's hostname.
 
 Apache HTTPd Installation Notes
 -------------------------------
@@ -201,6 +201,10 @@ For Redis daemons that are password protected, add the password configuration va
 Riak Installation Notes
 -----------------------
 If you are monitoring Riak via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
+
+UWSGI Installation Notes
+------------------------
+The UWSGI plugin can communicate either over UNIX domain sockets using the path configuration variable or TCP/IP using the host and port variables. Do not include both.
 
 Configuration Example
 ---------------------
