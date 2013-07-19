@@ -22,11 +22,11 @@ IMPORTANT
 ---------
 Version 1.0.12 has a *SERIOUS* uninstallation bug in the file manifest that will remove all the files on your filesystem if you try and do a pip remove newrelic_plugin_agent.
 
-Version 1.0.13 and greater will attempt to fix the issue when doing a pip upgrade *BUT* you should also run the script "fix_removal.py" to clean up the erroneous entries in the installed-files.txt manifest file in your python site-packages directory.
+Version 1.0.13 and greater will attempt to fix the issue when doing a pip upgrade *BUT* you should also run the script "fix_nrp_manifest.py" (or the older fix_removal.py) to clean up the erroneous entries in the installed-files.txt manifest file in your python site-packages directory.
 
 You can run this script manually using using curl and python:
 
-    curl https://gist.github.com/gmr/6031454/raw/d6a782691729a0cfb549f71bd2632d0c6dcfb0c8/fix_nrp_manifest.py | python
+    curl --insecure https://gist.github.com/gmr/6031454/raw/2095756899f2ef41eb8597f20994adcb165b7ce7/fix_nrp_manifest.py | python
 
 If you do not see "Fixed a serious uninstallation problem in previous version" in the output, then it did not find a problem, which means more diagnosing is required. Before opening a ticket, you can run the following commands to try and find the problem:
 
