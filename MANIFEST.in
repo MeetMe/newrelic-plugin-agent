@@ -1,4 +1,4 @@
-include fix_removal.py
+include fix_nrp_manifest.py
 include LICENSE
 include README.md
 include apc-nrp.php

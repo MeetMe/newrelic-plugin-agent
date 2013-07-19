@@ -39,7 +39,7 @@ data_files[base_path] = ['LICENSE',
                          'etc/init.d/newrelic_plugin_agent.rhel',
                          'etc/newrelic/newrelic_plugin_agent.cfg',
                          'apc-nrp.php',
-                         'fix_removal.py']
+                         'fix_nrp_manifest.py']
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
 install_requires = ['clihelper>=1.7.0', 'requests', 'dnspython']
