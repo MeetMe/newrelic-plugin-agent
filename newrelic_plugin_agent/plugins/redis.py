@@ -3,6 +3,7 @@ Redis plugin polls Redis for stats
 
 """
 import logging
+from os import path
 import socket
 import time
 
@@ -87,31 +88,52 @@ class Redis(base.Plugin):
         self.add_gauge_value('Keys/Will Expire', '', expires)
 
     def connect(self):
-        """Create a socket and connect it to the memcached daemon.
+        """Top level interface to create a socket and connect it to the
+        memcached daemon.
 
         :rtype: socket
 
         """
-
-        params = (self.config.get('host', self.DEFAULT_HOST),
-                  self.config.get('port', self.DEFAULT_PORT))
-        LOGGER.debug('Connecting to Redis at %s:%s', params[0], params[1])
-        connection = socket.socket()
         try:
-            connection.connect(params)
+            connection = self._connect()
         except socket.error as error:
-            LOGGER.error('Error connecting to %s:%i - %s', params[0], params[1], error)
+            LOGGER.error('Error connecting to memcached: %s', error)
             return None
 
         if self.config.get('password'):
             connection.send("*2\r\n$4\r\nAUTH\r\n$%i\r\n%s\r\n" %
-                            (len(self.config['password']), self.config['password']))
+                            (len(self.config['password']),
+                             self.config['password']))
             buffer_value = connection.recv(self.SOCKET_RECV_MAX)
             if buffer_value == '+OK\r\n':
                 return connection
             LOGGER.error('Authentication error: %s', buffer_value[4:].strip())
             return None
 
+        return connection
+
+    def _connect(self):
+        """Low level interface to create a socket and connect it to the
+        memcached daemon.
+
+        :rtype: socket
+
+        """
+        if 'path' in self.config:
+            if path.exists(self.config['path']):
+                LOGGER.debug('Connecting to UNIX socket: %s',
+                             self.config['path'])
+                connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                connection.connect(self.config['path'])
+            else:
+                LOGGER.error('RedisUNIX socket path does not exist: %s',
+                             self.config['path'])
+        else:
+            params = (self.config.get('host', self.DEFAULT_HOST),
+                      self.config.get('port', self.DEFAULT_PORT))
+            LOGGER.debug('Connecting to Redis at %s:%s', params[0], params[1])
+            connection = socket.socket()
+            connection.connect(params)
         return connection
 
     def fetch_data(self, connection):

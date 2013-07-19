@@ -206,6 +206,9 @@ Redis Installation Notes
 ------------------------
 For Redis daemons that are password protected, add the password configuration value, otherwise omit it. The Redis configuration section allows for multiple redis servers. The syntax to poll multiple servers is in the example below.
 
+The Redis plugin can communicate either over UNIX domain sockets using the path configuration variable or TCP/IP using the host and port variables. Do not include both.
+
+
 Riak Installation Notes
 -----------------------
 If you are monitoring Riak via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
@@ -328,11 +331,13 @@ Configuration Example
           port: 6379
           db_count: 16
           password: foobar
+          #path: /var/run/redis/redis.sock
         - name: localhost
           host: localhost
           port: 6380
           db_count: 16
           password: foobar
+          #path: /var/run/redis/redis.sock
 
       riak:
         - name: localhost
