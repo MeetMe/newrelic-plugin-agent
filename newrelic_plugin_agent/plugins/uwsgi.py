@@ -1,5 +1,5 @@
 """
-UWSGI
+uWSGI
 
 """
 import json
@@ -90,7 +90,7 @@ class UWSGI(base.Plugin):
 
     def connect(self):
         """Top level interface to create a socket and connect it to the
-        UWSGI daemon.
+        uWSGI daemon.
 
         :rtype: socket
 
@@ -104,7 +104,7 @@ class UWSGI(base.Plugin):
 
     def _connect(self):
         """Low level interface to create a socket and connect it to the
-        UWSGI daemon.
+        uWSGI daemon.
 
         :rtype: socket
 
@@ -116,7 +116,7 @@ class UWSGI(base.Plugin):
                 connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 connection.connect(self.config['path'])
             else:
-                LOGGER.error('UWSGI UNIX socket path does not exist: %s',
+                LOGGER.error('uWSGI UNIX socket path does not exist: %s',
                              self.config['path'])
         else:
             connection = socket.socket()
@@ -140,7 +140,7 @@ class UWSGI(base.Plugin):
         the run method.
 
         """
-        LOGGER.info('Polling UWSGI')
+        LOGGER.info('Polling uWSGI')
         start_time = time.time()
 
         # Initialize the values each iteration
@@ -151,6 +151,9 @@ class UWSGI(base.Plugin):
 
         # Fetch the data from Memcached
         connection = self.connect()
+        if not connection:
+            LOGGER.error('Could not connect to uWSGI, skipping poll interval')
+            return
         data = self.fetch_data(connection)
         connection.close()
         if data:
@@ -159,4 +162,4 @@ class UWSGI(base.Plugin):
             LOGGER.info('Polling complete in %.2f seconds',
                         time.time() - start_time)
         else:
-            LOGGER.error('Unsuccessful attempt to collect stats from UWSGI')
+            LOGGER.error('Unsuccessful attempt to collect stats from uWSGI')
