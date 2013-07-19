@@ -38,6 +38,7 @@ data_files[base_path] = ['LICENSE',
                          'etc/init.d/newrelic_plugin_agent.deb',
                          'etc/init.d/newrelic_plugin_agent.rhel',
                          'etc/newrelic/newrelic_plugin_agent.cfg',
+                         'etc/apc-nrp.php',
                          'fix_removal.py']
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']

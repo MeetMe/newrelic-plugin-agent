@@ -61,7 +61,7 @@ class Nginx(base.Plugin):
     def nginx_stats_url(self):
         if 'scheme' not in self.config:
             self.config['scheme'] = 'http'
-        return '%{scheme}://%(host)s:%(port)s/%(path)s' % self.config
+        return '%(scheme)s://%(host)s:%(port)s/%(path)s' % self.config
 
     def fetch_data(self):
         """Fetch the data from the Nginx server for the specified data type

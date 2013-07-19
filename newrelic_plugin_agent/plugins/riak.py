@@ -176,7 +176,7 @@ class Riak(base.Plugin):
     def riak_stats_url(self):
         if 'scheme' not in self.config:
             self.config['scheme'] = 'http'
-        return '%{scheme}://%(host)s:%(port)s/stats' % self.config
+        return '%(scheme)s://%(host)s:%(port)s/stats' % self.config
 
     def fetch_data(self):
         """Fetch the data from the Riak server for the specified data type

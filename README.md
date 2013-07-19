@@ -106,7 +106,7 @@ The fields for plugin configurations can vary due to a plugin's configuration re
 
 APC Installation Notes
 ----------------------
-Copy the apc-php.php script to a directory that can be served by your web server or php-fpm application. Edit the newrelic_plugin_agent configuration to point to the appropriate URL.
+Copy the apc-nrp.php script to a directory that can be served by your web server or php-fpm application. Edit the newrelic_plugin_agent configuration to point to the appropriate URL.
 
 Apache HTTPd Installation Notes
 -------------------------------
