@@ -26,7 +26,7 @@ Version 1.0.13 and greater will attempt to fix the issue when doing a pip upgrad
 
 You can run this script manually using using curl and python:
 
-    curl --insecure https://gist.github.com/gmr/6031454/raw/2095756899f2ef41eb8597f20994adcb165b7ce7/fix_nrp_manifest.py | python
+    curl --insecure https://gist.github.com/gmr/6031454/raw/6f78f0bd33af3af348f432341bf1d62c3b3f0759/fix_nrp_manifest.py | python
 
 If you do not see "Fixed a serious uninstallation problem in previous version" in the output, then it did not find a problem, which means more diagnosing is required. Before opening a ticket, you can run the following commands to try and find the problem:
 
