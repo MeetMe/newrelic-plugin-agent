@@ -263,6 +263,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 self.poll_plugin(plugin, pgbouncer.PgBouncer,
                                  self.application_config.get(plugin))
 
+            elif plugin == 'php_apc':
+                if 'php_apc' not in globals():
+                    from newrelic_plugin_agent.plugins import php_apc
+                self.poll_plugin(plugin, php_apc.APC,
+                                 self.application_config.get(plugin))
+
             elif plugin == 'postgresql':
                 if 'postgresql' not in globals():
                     from newrelic_plugin_agent.plugins import postgresql

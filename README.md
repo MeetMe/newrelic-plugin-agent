@@ -4,6 +4,7 @@ newrelic_plugin_agent
 An agent that polls supported backend systems and submits the results to the
 NewRelic platform. Currently supported backend systems are:
 
+- Alternative PHP Cache
 - Apache HTTP Server
 - CouchDB
 - Edgecast CDN "Realtime" API
@@ -15,6 +16,7 @@ NewRelic platform. Currently supported backend systems are:
 - RabbitMQ
 - Redis
 - Riak
+- uWSGI
 
 IMPORTANT
 ---------
@@ -101,6 +103,10 @@ You can also use a single mapping like follows:
         foo: bar
 
 The fields for plugin configurations can vary due to a plugin's configuration requirements. The name value in each stanza is only required when using multiple targets in a plugin. If it is only a single target, the name will be taken from the server's hostname.
+
+APC Installation Notes
+----------------------
+Copy the apc-php.php script to a directory that can be served by your web server or php-fpm application. Edit the newrelic_plugin_agent configuration to point to the appropriate URL.
 
 Apache HTTPd Installation Notes
 -------------------------------
@@ -289,6 +295,15 @@ Configuration Example
         - host: localhost
           port: 6000
           user: stats
+
+      php_apc:
+         scheme: http
+         host: localhost
+         port: 80
+         path: /apc-nrp.php
+         #username: foo
+         #password: bar
+         #verify_ssl_cert: t
 
       postgresql:
         - host: localhost
