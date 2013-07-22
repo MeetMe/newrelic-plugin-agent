@@ -96,7 +96,6 @@ class NewRelicPluginAgent(clihelper.Controller):
         the run method.
 
         """
-        LOGGER.info('Polling')
         start_time = time.time()
         self.start_plugin_polling()
         while self.threads_running:
