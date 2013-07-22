@@ -238,8 +238,6 @@ class NewRelicPluginAgent(clihelper.Controller):
         return False
 
     def thread_process(self, name, plugin, config, poll_interval):
-        LOGGER.debug('Polling %s, %r, %r, %r',
-                     name, plugin, config, poll_interval)
         instance_name = "%s:%s" % (name, config.get('name', 'unnamed'))
         obj = plugin(config, poll_interval,
                      self.derive_last_interval.get(instance_name))
