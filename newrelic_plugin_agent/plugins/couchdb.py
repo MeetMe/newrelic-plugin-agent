@@ -1,18 +1,17 @@
 """
-couchdb
+CouchDB
 
 """
 import logging
-import requests
-import time
 
 from newrelic_plugin_agent.plugins import base
 
 LOGGER = logging.getLogger(__name__)
 
 
-class CouchDB(base.Plugin):
+class CouchDB(base.JSONStatsPlugin):
 
+    DEFAULT_PATH = '/_stats'
     GUID = 'com.meetme.newrelic_couchdb_agent'
 
     HTTP_METHODS = ['COPY', 'DELETE', 'GET', 'HEAD', 'POST', 'PUT']
@@ -25,6 +24,7 @@ class CouchDB(base.Plugin):
         :param dict stats: all of the nodes
 
         """
+        LOGGER.debug('Stats: %r', stats)
         self.add_database_stats(stats['couchdb'])
         self.add_request_methods(stats['httpd_request_methods'])
         self.add_request_stats(stats['couchdb'], stats['httpd'])
@@ -45,7 +45,6 @@ class CouchDB(base.Plugin):
                              stats['open_os_files'].get('max', 0))
 
     def add_request_stats(self, couchdb, httpd):
-
         self.add_derive_timing_value('Requests/Velocity', 'sec',
                                      httpd['requests'].get('current', 0),
                                      couchdb['request_time'].get('current', 0))
@@ -67,47 +66,3 @@ class CouchDB(base.Plugin):
         for code in self.STATUS_CODES:
             self.add_derive_value('Requests/Response/%s' % code, '',
                                   stats[str(code)].get('current', 0))
-
-    @property
-    def couchdb_stats_url(self):
-        if 'scheme' not in self.config:
-            self.config['scheme'] = 'http'
-        return '%(scheme)s://%(host)s:%(port)s/_stats' % self.config
-
-    def fetch_data(self):
-        """Fetch the data from the CouchDB server for the specified data type
-
-        :rtype: dict
-
-        """
-        kwargs = {'url': self.couchdb_stats_url,
-                  'verify': self.config.get('verify_ssl_cert', True)}
-        if 'username' in self.config and 'password' in self.config:
-            kwargs['auth'] = (self.config['username'], self.config['password'])
-
-        try:
-            response = requests.get(**kwargs)
-        except requests.ConnectionError as error:
-            LOGGER.error('Error polling CouchDB: %s', error)
-            return {}
-
-        if response.status_code == 200:
-            try:
-                return response.json()
-            except Exception as error:
-                LOGGER.error('JSON decoding error: %r', error)
-                return {}
-
-        LOGGER.error('Error response from %s (%s): %s', self.couchdb_stats_url,
-                     response.status_code, response.content)
-        return {}
-
-    def poll(self):
-        LOGGER.info('Polling CouchDB via %s', self.couchdb_stats_url)
-        start_time = time.time()
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
-        self.add_datapoints(self.fetch_data())
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
