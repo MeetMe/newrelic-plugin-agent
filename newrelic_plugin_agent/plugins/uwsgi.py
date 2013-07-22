@@ -4,23 +4,18 @@ uWSGI
 """
 import json
 import logging
-from os import path
-import socket
-import time
 
 from newrelic_plugin_agent.plugins import base
 
 LOGGER = logging.getLogger(__name__)
 
 
-class UWSGI(base.Plugin):
+class uWSGI(base.SocketStatsPlugin):
 
     GUID = 'com.meetme.newrelic_uwsgi_agent'
 
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 1717
-
-    SOCKET_RECV_MAX = 10485760
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node
@@ -88,78 +83,15 @@ class UWSGI(base.Plugin):
         self.add_derive_value('Summary/Workers', '',
                               len(stats.get('workers', ())))
 
-    def connect(self):
-        """Top level interface to create a socket and connect it to the
-        uWSGI daemon.
-
-        :rtype: socket
-
-        """
-        try:
-            connection = self._connect()
-        except socket.error as error:
-            LOGGER.error('Error connecting to memcached: %s', error)
-        else:
-            return connection
-
-    def _connect(self):
-        """Low level interface to create a socket and connect it to the
-        uWSGI daemon.
-
-        :rtype: socket
-
-        """
-        if 'path' in self.config:
-            if path.exists(self.config['path']):
-                LOGGER.debug('Connecting to UNIX socket: %s',
-                             self.config['path'])
-                connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                connection.connect(self.config['path'])
-            else:
-                LOGGER.error('uWSGI UNIX socket path does not exist: %s',
-                             self.config['path'])
-        else:
-            connection = socket.socket()
-            connection.connect((self.config.get('host', self.DEFAULT_HOST),
-                                self.config.get('port', self.DEFAULT_PORT)))
-        return connection
-
     def fetch_data(self, connection):
         """Read the data from the socket
 
         :param  socket connection: The connection
+        :return: dict
 
         """
-        LOGGER.debug('Fetching data')
-        data = connection.recv(self.SOCKET_RECV_MAX)
-        return json.loads(data)
-
-    def poll(self):
-        """This method is called after every sleep interval. If the intention
-        is to use an IOLoop instead of sleep interval based daemon, override
-        the run method.
-
-        """
-        LOGGER.info('Polling uWSGI')
-        start_time = time.time()
-
-        # Initialize the values each iteration
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
-        self.consumers = 0
-
-        # Fetch the data from Memcached
-        connection = self.connect()
-        if not connection:
-            LOGGER.error('Could not connect to uWSGI, skipping poll interval')
-            return
-        data = self.fetch_data(connection)
-        connection.close()
+        data = super(uWSGI, self).fetch_data(connection)
         if data:
-            # Create all of the metrics
-            self.add_datapoints(data)
-            LOGGER.info('Polling complete in %.2f seconds',
-                        time.time() - start_time)
-        else:
-            LOGGER.error('Unsuccessful attempt to collect stats from uWSGI')
+            return json.loads(data)
+        return {}
+
