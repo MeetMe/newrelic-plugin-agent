@@ -4,7 +4,7 @@ being profiled.
 
 """
 available = {
-    'apache_http': 'newrelic_plugin_agent.plugins.apache_httpd.ApacheHTTPD',
+    'apache_httpd': 'newrelic_plugin_agent.plugins.apache_httpd.ApacheHTTPD',
     'couchdb': 'newrelic_plugin_agent.plugins.couchdb.CouchDB',
     'edgecast': 'newrelic_plugin_agent.plugins.edgecast.Edgecast',
     'memcached': 'newrelic_plugin_agent.plugins.memcached.Memcached',
