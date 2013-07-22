@@ -3,20 +3,15 @@ memcached
 
 """
 import logging
-from os import path
-import socket
-import time
 
 from newrelic_plugin_agent.plugins import base
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Memcached(base.Plugin):
+class Memcached(base.SocketStatsPlugin):
 
     GUID = 'com.meetme.newrelic_memcached_agent'
-
-    DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 11211
     KEYS = ['curr_connections',
             'curr_items',
@@ -75,7 +70,6 @@ class Memcached(base.Plugin):
         self.add_derive_value('Network/In', 'bytes', stats['bytes_read'])
         self.add_derive_value('Network/Out', 'bytes', stats['bytes_written'])
 
-
         self.add_derive_value('System/CPU/System', 'sec', stats['rusage_user'])
         self.add_derive_value('System/CPU/User', 'sec', stats['rusage_user'])
         self.add_gauge_value('System/Memory', 'bytes', stats['bytes'])
@@ -96,93 +90,20 @@ class Memcached(base.Plugin):
         self.add_derive_value('Command/Requests/%s' % name, '', total)
         self.add_gauge_value('Command/Hit Ratio/%s' % name, '', ratio)
 
-    def connect(self):
-        """Top level interface to create a socket and connect it to the
-        memcached daemon.
-
-        :rtype: socket
-
-        """
-        try:
-            connection = self._connect()
-        except socket.error as error:
-            LOGGER.error('Error connecting to memcached: %s', error)
-        else:
-            return connection
-
-    def _connect(self):
-        """Low level interface to create a socket and connect it to the
-        memcached daemon.
-
-        :rtype: socket
-
-        """
-        if 'path' in self.config:
-            if path.exists(self.config['path']):
-                LOGGER.debug('Connecting to UNIX socket: %s',
-                             self.config['path'])
-                connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                connection.connect(self.config['path'])
-            else:
-                LOGGER.error('Memcached UNIX socket path does not exist: %s',
-                             self.config['path'])
-        else:
-            connection = socket.socket()
-            connection.connect((self.config.get('host', self.DEFAULT_HOST),
-                                self.config.get('port', self.DEFAULT_PORT)))
-        return connection
-
     def fetch_data(self, connection):
         """Loop in and read in all the data until we have received it all.
 
         :param  socket connection: The connection
 
         """
-        # Loop while we get the data
+        connection.send("stats\n")
+        data = super(Memcached, self).fetch_data(connection)
         data_in = []
-        while True:
-
-            # Read in the data
-            data = connection.recv(self.SOCKET_RECV_MAX)
-            if not data:
-                break
-
-            # Iterate over each line that has been read in
-            for line in data.replace('\r', '').split('\n'):
-                # If we got END delimiter, exit
-                if line == 'END':
-                    return data_in
-
-                # Append the line to our list
-                data_in.append(line.strip())
-
-    def poll(self):
-        """This method is called after every sleep interval. If the intention
-        is to use an IOLoop instead of sleep interval based daemon, override
-        the run method.
-
-        """
-        LOGGER.info('Polling Memcached')
-        start_time = time.time()
-
-        # Initialize the values each iteration
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
-        self.consumers = 0
-
-        # Fetch the data from Memcached
-        connection = self.connect()
-        if self.send_command(connection):
-            data = self.fetch_data(connection)
-            connection.close()
-            del connection
-            # Create all of the metrics
-            self.add_datapoints(self.process_data(data))
-            LOGGER.info('Polling complete in %.2f seconds',
-                        time.time() - start_time)
-        else:
-            LOGGER.error('Unsuccessful attempt to collect stats from memcached')
+        for line in data.replace('\r', '').split('\n'):
+            if line == 'END':
+                return self.process_data(data_in)
+            data_in.append(line.strip())
+        return None
 
     def process_data(self, data):
         """Loop through all the rows and parse each line, looking to see if it
@@ -214,16 +135,3 @@ class Memcached(base.Plugin):
 
         # Return the values dict
         return values
-
-    def send_command(self, connection):
-        """Send the command to get the statistics from the connection.
-
-        :param socket connection: The connection
-
-        """
-        try:
-            connection.send("stats\n")
-        except AttributeError:
-            LOGGER.error('Did not connect to memcached successfully')
-            return False
-        return True
