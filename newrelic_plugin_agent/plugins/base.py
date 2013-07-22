@@ -306,7 +306,7 @@ class SocketStatsPlugin(Plugin):
         else:
             remote_host = (self.config.get('host', self.DEFAULT_HOST),
                            self.config.get('port', self.DEFAULT_PORT))
-            LOGGER.debug('Connecting to %s:%s', remote_host)
+            LOGGER.debug('Connecting to %r', remote_host)
             connection = socket.socket()
             connection.connect(remote_host)
         return connection
