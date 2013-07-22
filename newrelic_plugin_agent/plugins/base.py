@@ -130,7 +130,9 @@ class Plugin(object):
         errors.
 
         """
-        if not self.derive and not self.gauge and not self.rate:
+        if (not self.derive_values and
+            not self.gauge_values and
+            not self.rate_values):
             self.error_message()
         else:
             LOGGER.info('%s poll successful, completed in %.2f seconds',
@@ -141,9 +143,9 @@ class Plugin(object):
         """Empty stats collection dictionaries for the polling interval"""
         LOGGER.info('Polling %s', self.__class__.__name__)
         self.poll_start_time = time.time()
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
+        self.derive_values = dict()
+        self.gauge_values = dict()
+        self.rate_values = dict()
 
     def initialize_counters(self, keys):
         """Create a new set of counters for the given key list
@@ -332,8 +334,8 @@ class HTTPStatsPlugin(Plugin):
         :rtype: requests.models.Response
 
         """
-        LOGGER.info('Polling %s Stats at %s',
-                    self.__class__.__name__, self.stats_url)
+        LOGGER.debug('Polling %s Stats at %s',
+                     self.__class__.__name__, self.stats_url)
         try:
             response = requests.get(**self.request_kwargs)
         except requests.ConnectionError as error:
