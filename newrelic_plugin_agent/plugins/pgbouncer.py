@@ -2,42 +2,37 @@
 pgBouncer Plugin Support
 
 """
-import psycopg2
-from psycopg2 import extensions
-from psycopg2 import extras
-
 import logging
-import time
 
-from newrelic_plugin_agent.plugins import base
+from newrelic_plugin_agent.plugins import postgresql
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PgBouncer(base.Plugin):
+class PgBouncer(postgresql.PostgreSQL):
 
     GUID = 'com.meetme.newrelic_pgbouncer_agent'
     MULTIROW = ['POOLS', 'STATS']
 
-    def add_metrics(self, metrics):
+    def add_pgbouncer_stats(self, stats):
 
         self.add_gauge_value('Overview/Databases', '',
-                             metrics['LISTS']['databases'])
+                             stats['LISTS']['databases'])
         self.add_gauge_value('Overview/Pools', '',
-                             metrics['LISTS']['pools'])
+                             stats['LISTS']['pools'])
         self.add_gauge_value('Overview/Users', '',
-                             metrics['LISTS']['users'])
+                             stats['LISTS']['users'])
 
         self.add_gauge_value('Overview/Clients/Free', '',
-                             metrics['LISTS']['free_clients'])
+                             stats['LISTS']['free_clients'])
         self.add_gauge_value('Overview/Clients/Used', '',
-                             metrics['LISTS']['used_clients'])
+                             stats['LISTS']['used_clients'])
         self.add_gauge_value('Overview/Servers/Free', '',
-                             metrics['LISTS']['free_servers'])
+                             stats['LISTS']['free_servers'])
         self.add_gauge_value('Overview/Servers/Used', '',
-                             metrics['LISTS']['used_servers'])
+                             stats['LISTS']['used_servers'])
 
-        for database in metrics['STATS']:
+        for database in stats['STATS']:
             metric = 'Database/%s' % database['database']
             self.add_derive_value('%s/Query Time' % metric, 'sec',
                                   database['total_query_time'])
@@ -48,7 +43,7 @@ class PgBouncer(base.Plugin):
             self.add_derive_value('%s/Data Received' % metric, 'bytes',
                                   database['total_received'])
 
-        for pool in metrics['POOLS']:
+        for pool in stats['POOLS']:
             metric = 'Pools/%s' % pool['database']
             self.add_gauge_value('%s/Clients/Active' % metric, '',
                                  pool['cl_active'])
@@ -67,27 +62,7 @@ class PgBouncer(base.Plugin):
             self.add_gauge_value('%s/Maximum Wait' % metric, 'sec',
                                  pool['maxwait'])
 
-    @property
-    def dsn(self):
-        """Create a DSN to connect to
-
-        :return str: The DSN to connect
-
-        """
-        dsn = "host='%(host)s' port=%(port)i dbname='pgbouncer' " \
-              "user='%(user)s'" % self.config
-        if self.config.get('password'):
-            dsn += " password='%s'" % self.config['password']
-        return dsn
-
-    def connect(self):
-        conn = psycopg2.connect(self.dsn)
-        conn.set_isolation_level(extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-        return conn
-
-    def fetch_stats(self):
-        conn = self.connect()
-        cursor = conn.cursor(cursor_factory=extras.DictCursor)
+    def add_stats(self, cursor):
         stats = dict()
         for key in self.MULTIROW:
             stats[key] = dict()
@@ -103,16 +78,17 @@ class PgBouncer(base.Plugin):
         for row in temp:
             stats['LISTS'][row['list']] = row['items']
 
-        cursor.close()
-        conn.close()
-        return stats
+        self.add_pgbouncer_stats(stats)
 
-    def poll(self):
-        LOGGER.info('Polling pgBouncer at %(host)s:%(port)s', self.config)
-        start_time = time.time()
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
-        self.add_metrics(self.fetch_stats())
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
+    @property
+    def dsn(self):
+        """Create a DSN to connect to
+
+        :return str: The DSN to connect
+
+        """
+        dsn = "host='%(host)s' port=%(port)i dbname='pgbouncer' " \
+              "user='%(user)s'" % self.config
+        if self.config.get('password'):
+            dsn += " password='%s'" % self.config['password']
+        return dsn

@@ -1,13 +1,11 @@
 """
-pgBouncer Plugin Support
+PostgreSQL Plugin
 
 """
+import logging
 import psycopg2
 from psycopg2 import extensions
 from psycopg2 import extras
-
-import logging
-import time
 
 from newrelic_plugin_agent.plugins import base
 
@@ -65,20 +63,21 @@ class PostgreSQL(base.Plugin):
 
     GUID = 'com.meetme.newrelic_postgresql_agent'
 
-    def add_metrics(self, cursor):
-        self.add_backend_metrics(cursor)
-        self.add_bgwriter_metrics(cursor)
-        self.add_database_metrics(cursor)
-        self.add_index_metrics(cursor)
-        self.add_lock_metrics(cursor)
-        self.add_statio_metrics(cursor)
-        self.add_table_metrics(cursor)
-        self.add_transaction_metrics(cursor)
-        # add_wal_metrics needs superuser to get directory listings, checks if user want's to omit that
+    def add_stats(self, cursor):
+        self.add_backend_stats(cursor)
+        self.add_bgwriter_stats(cursor)
+        self.add_database_stats(cursor)
+        self.add_index_stats(cursor)
+        self.add_lock_stats(cursor)
+        self.add_statio_stats(cursor)
+        self.add_table_stats(cursor)
+        self.add_transaction_stats(cursor)
+        
+        # add_wal_metrics needs superuser to get directory listings
         if self.config.get('superuser', True):
-            self.add_wal_metrics(cursor)
+            self.add_wal_stats(cursor)
 
-    def add_database_metrics(self, cursor):
+    def add_database_stats(self, cursor):
         cursor.execute(DATABASE)
         temp = cursor.fetchall()
         for row in temp:
@@ -114,8 +113,8 @@ class PostgreSQL(base.Plugin):
                                   database, '',
                                   int(row.get('conflicts', 0)))
 
-    def add_backend_metrics(self, cursor):
-        if self._get_server_version(cursor.connection) < (9, 2, 0):
+    def add_backend_stats(self, cursor):
+        if self.server_version < (9, 2, 0):
             cursor.execute(BACKENDS)
         else:
             cursor.execute(BACKENDS_9_2)
@@ -125,7 +124,7 @@ class PostgreSQL(base.Plugin):
         self.add_gauge_value('Backends/Idle', '',
                              temp.get('backends_idle', 0))
 
-    def add_bgwriter_metrics(self, cursor):
+    def add_bgwriter_stats(self, cursor):
         cursor.execute(BGWRITER)
         temp = cursor.fetchone()
         self.add_derive_value('Background Writer/Checkpoints/Scheduled',
@@ -135,7 +134,7 @@ class PostgreSQL(base.Plugin):
                               '',
                               temp.get('checkpoints_requests', 0))
 
-    def add_index_metrics(self, cursor):
+    def add_index_stats(self, cursor):
         cursor.execute(INDEX_COUNT)
         temp = cursor.fetchone()
         self.add_gauge_value('Objects/Indexes', '',
@@ -145,7 +144,7 @@ class PostgreSQL(base.Plugin):
         self.add_gauge_value('Disk Utilization/Indexes', 'bytes',
                              temp.get('size_indexes', 0))
 
-    def add_lock_metrics(self, cursor):
+    def add_lock_stats(self, cursor):
         cursor.execute(LOCKS)
         temp = cursor.fetchall()
         for lock in LOCK_MAP:
@@ -157,7 +156,7 @@ class PostgreSQL(base.Plugin):
             if not found:
                     self.add_gauge_value(LOCK_MAP[lock], '', 0)
 
-    def add_statio_metrics(self, cursor):
+    def add_statio_stats(self, cursor):
         cursor.execute(STATIO)
         temp = cursor.fetchone()
         self.add_derive_value('IO Operations/Heap/Reads', '',
@@ -177,7 +176,7 @@ class PostgreSQL(base.Plugin):
         self.add_derive_value('IO Operations/Toast Index/Hits', '',
                               int(temp.get('toastindex_blocks_hit', 0)))
 
-    def add_table_metrics(self, cursor):
+    def add_table_stats(self, cursor):
         cursor.execute(TABLE_COUNT)
         temp = cursor.fetchone()
         self.add_gauge_value('Objects/Tables', '',
@@ -187,7 +186,7 @@ class PostgreSQL(base.Plugin):
         self.add_gauge_value('Disk Utilization/Tables', 'bytes',
                              temp.get('size_relations', 0))
 
-    def add_transaction_metrics(self, cursor):
+    def add_transaction_stats(self, cursor):
         cursor.execute(TRANSACTIONS)
         temp = cursor.fetchone()
         self.add_derive_value('Transactions/Committed', '',
@@ -214,7 +213,7 @@ class PostgreSQL(base.Plugin):
         self.add_derive_value('Tuples/Writes/Deletes', '',
                               int(temp.get('tuples_deleted', 0)))
 
-    def add_wal_metrics(self, cursor):
+    def add_wal_stats(self, cursor):
         cursor.execute(ARCHIVE)
         temp = cursor.fetchone()
         self.add_derive_value('Archive Status/Total', '',
@@ -224,6 +223,17 @@ class PostgreSQL(base.Plugin):
         self.add_derive_value('Archive Status/Done', '',
                               temp.get('done_count', 0))
 
+
+    def connect(self):
+        """Connect to PostgreSQL, returning the connection object.
+        
+        :rtype: psycopg2.connection
+        
+        """
+        conn = psycopg2.connect(self.dsn)
+        conn.set_isolation_level(extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        return conn
+    
     @property
     def dsn(self):
         """Create a DSN to connect to
@@ -236,30 +246,23 @@ class PostgreSQL(base.Plugin):
         if self.config.get('password'):
             dsn += " password='%s'" % self.config['password']
         return dsn
-
-    def connect(self):
-        conn = psycopg2.connect(self.dsn)
-        conn.set_isolation_level(extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-        return conn
-
+    
     def poll(self):
-        LOGGER.info('Polling PostgreSQL at %(host)s:%(port)s', self.config)
-        start_time = time.time()
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
-
-        conn = self.connect()
-        cursor = conn.cursor(cursor_factory=extras.DictCursor)
-        self.add_metrics(cursor)
+        self.initialize()
+        self.connection = self.connect()
+        cursor = self.connection.cursor(cursor_factory=extras.DictCursor)
+        self.add_stats(cursor)
         cursor.close()
-        conn.close()
+        self.connection.close()
+        self.finish()
 
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
-
-    def _get_server_version(self, connection):
-        """Get connection server version in PEP 369 format"""
-        v = connection.server_version
-        return (v % 1000000 / 10000, v % 10000 / 100, v % 100)
-
+    @property
+    def server_version(self):
+        """Return connection server version in PEP 369 format
+        
+        :returns: tuple
+        
+        """
+        return (self.connection.server_version % 1000000 / 10000, 
+                self.connection.server_version % 10000 / 100, 
+                self.connection.server_version % 100)
