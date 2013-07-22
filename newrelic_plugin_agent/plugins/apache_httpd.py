@@ -17,6 +17,7 @@ PATTERN = re.compile(r'Total Accesses\:\s(?P<accesses>\d+)\nTotal\skBytes\:'
                      r'(?P<bytes_per_request>[\d\.]+)\nBusyWorkers\:\s'
                      r'(?P<busy>[\d\.]+)\nIdleWorkers\:\s(?P<idle>[\d\.]+)\n')
 
+
 class ApacheHTTPD(base.HTTPStatsPlugin):
 
     DEFAULT_QUERY = 'auto'
