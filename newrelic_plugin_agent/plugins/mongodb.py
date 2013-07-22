@@ -212,6 +212,7 @@ class MongoDB(base.Plugin):
                 if 'username' in databases[database]:
                     db.authenticate(databases[database]['username'],
                                     databases[database].get('password'))
+                self.add_datapoints(database, db.command('dbStats'))
             except errors.OperationFailure as error:
                 LOGGER.critical('Could not fetch stats: %s', error)
 
