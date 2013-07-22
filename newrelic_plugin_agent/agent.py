@@ -3,6 +3,7 @@ Multiple Plugin Agent for the New Relic Platform
 
 """
 import clihelper
+import importlib
 import json
 import logging
 import os
@@ -14,6 +15,7 @@ import threading
 import time
 
 from newrelic_plugin_agent import __version__
+from newrelic_plugin_agent import plugins
 
 LOGGER = logging.getLogger(__name__)
 
@@ -215,89 +217,19 @@ class NewRelicPluginAgent(clihelper.Controller):
         self.last_interval_start = time.time()
 
     def start_plugin_polling(self):
-
-        plugins = [key for key in self.application_config.keys()
-                   if key not in self.IGNORE_KEYS]
-
-        for plugin in plugins:
-
-            if plugin == 'apache_httpd':
-                if 'apache_httpd' not in globals():
-                    from newrelic_plugin_agent.plugins import apache_httpd
-                self.poll_plugin(plugin, apache_httpd.ApacheHTTPD,
+        enabled_plugins = [key for key in self.application_config.keys()
+                           if key not in self.IGNORE_KEYS]
+        for plugin in enabled_plugins:
+            if plugin in plugins.available:
+                plugin_parts = plugins.available[plugin].split('.')
+                package = '.'.join(plugin_parts[:-1])
+                LOGGER.debug('Attempting to import %s', package)
+                module_handle = importlib.import_module(package)
+                class_handle = getattr(module_handle, plugin_parts[-1])
+                self.poll_plugin(plugin, class_handle,
                                  self.application_config.get(plugin))
-
-            if plugin == 'couchdb':
-                if 'couchdb' not in globals():
-                    from newrelic_plugin_agent.plugins import couchdb
-                self.poll_plugin(plugin, couchdb.CouchDB,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'edgecast':
-                if 'edgecast' not in globals():
-                    from newrelic_plugin_agent.plugins import edgecast
-                self.poll_plugin(plugin, edgecast.Edgecast,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'memcached':
-                if 'memcached' not in globals():
-                    from newrelic_plugin_agent.plugins import memcached
-                self.poll_plugin(plugin, memcached.Memcached,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'mongodb':
-                if 'mongodb' not in globals():
-                    from newrelic_plugin_agent.plugins import mongodb
-                self.poll_plugin(plugin, mongodb.MongoDB,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'nginx':
-                if 'nginx' not in globals():
-                    from newrelic_plugin_agent.plugins import nginx
-                self.poll_plugin(plugin, nginx.Nginx,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'pgbouncer':
-                if 'pgbouncer' not in globals():
-                    from newrelic_plugin_agent.plugins import pgbouncer
-                self.poll_plugin(plugin, pgbouncer.PgBouncer,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'php_apc':
-                if 'php_apc' not in globals():
-                    from newrelic_plugin_agent.plugins import php_apc
-                self.poll_plugin(plugin, php_apc.APC,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'postgresql':
-                if 'postgresql' not in globals():
-                    from newrelic_plugin_agent.plugins import postgresql
-                self.poll_plugin(plugin, postgresql.PostgreSQL,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'rabbitmq':
-                if 'rabbitmq' not in globals():
-                    from newrelic_plugin_agent.plugins import rabbitmq
-                self.poll_plugin(plugin, rabbitmq.RabbitMQ,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'redis':
-                if 'redis' not in globals():
-                    from newrelic_plugin_agent.plugins import redis
-                self.poll_plugin(plugin, redis.Redis,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'riak':
-                if 'riak' not in globals():
-                    from newrelic_plugin_agent.plugins import riak
-                self.poll_plugin(plugin, riak.Riak,
-                                 self.application_config.get(plugin))
-
-            elif plugin == 'uwsgi':
-                if 'uwsgi' not in globals():
-                    from newrelic_plugin_agent.plugins import uwsgi
-                self.poll_plugin(plugin, uwsgi.UWSGI,
-                                 self.application_config.get(plugin))
+            else:
+                LOGGER.error('Enabled plugin %s not available', plugin)
 
     @property
     def threads_running(self):
@@ -309,10 +241,12 @@ class NewRelicPluginAgent(clihelper.Controller):
     def thread_process(self, name, plugin, config, poll_interval):
         LOGGER.debug('Polling %s, %r, %r, %r',
                      name, plugin, config, poll_interval)
-        instance_name = "%s:%s" % (name, config.get('name','unnamed'))
-        obj = plugin(config, poll_interval, self.derive_last_interval.get(instance_name))
+        instance_name = "%s:%s" % (name, config.get('name', 'unnamed'))
+        obj = plugin(config, poll_interval,
+                     self.derive_last_interval.get(instance_name))
         obj.poll()
-        self.publish_queue.put((instance_name, obj.values(), obj.derive_last_interval))
+        self.publish_queue.put((instance_name, obj.values(),
+                                obj.derive_last_interval))
 
     @property
     def wake_interval(self):

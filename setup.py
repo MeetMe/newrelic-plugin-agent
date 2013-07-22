@@ -2,8 +2,7 @@ import os
 from os import path
 from setuptools import setup
 import site
-from distutils import sysconfig
-
+import sys
 
 # Check to see if the previous version was installed and clean up
 # installed-files.txt
@@ -67,6 +66,9 @@ tests_require = []
 extras_require = {'mongodb': ['pymongo'],
                   'pgbouncer': ['psycopg2'],
                   'postgresql': ['psycopg2']}
+
+if sys.version_info < (2, 7, 0):
+    install_requires.append('importlib')
 
 
 setup(name='newrelic_plugin_agent',
