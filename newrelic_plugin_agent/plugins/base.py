@@ -3,7 +3,11 @@ base
 
 """
 import logging
+from os import path
+import requests
 import socket
+import time
+import urlparse
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,16 +18,23 @@ class Plugin(object):
     MAX_VAL = 2147483647
 
     def __init__(self, config, poll_interval, last_interval_values=None):
-        self.poll_interval = poll_interval
         self.config = config
+        self.poll_interval = poll_interval
+        self.poll_start_time = 0
 
         self.derive_values = dict()
         self.derive_last_interval = last_interval_values or dict()
-
-
-        self.derive_last_interval = last_interval_values or dict()
         self.gauge_values = dict()
         self.rate_values = dict()
+
+    def add_datapoints(self, data):
+        """Extend this method to process the data points retrieved during the
+        poll process.
+
+        :param mixed data: The data received during the poll process
+
+        """
+        raise NotImplementedError
 
     def add_derive_value(self, metric_name, units, value, count=None):
         """Add a value that will derive the current value from the difference
@@ -107,6 +118,32 @@ class Plugin(object):
                 'guid': self.GUID,
                 'duration': self.poll_interval,
                 'metrics': metrics}
+
+    def error_message(self):
+        """Output an error message when stats collection fails"""
+        LOGGER.error('Error collecting stats data from %s. Please check '
+                     'configuration and sure it conforms with YAML '
+                     'syntax', self.__class__.__name__)
+
+    def finish(self):
+        """Note the end of the stat collection run and let the user know of any
+        errors.
+
+        """
+        if not self.derive and not self.gauge and not self.rate:
+            self.error_message()
+        else:
+            LOGGER.info('%s poll successful, completed in %.2f seconds',
+                        self.__class__.__name__,
+                        time.time() - self.poll_start_time)
+
+    def initialize(self):
+        """Empty stats collection dictionaries for the polling interval"""
+        LOGGER.info('Polling %s', self.__class__.__name__)
+        self.poll_start_time = time.time()
+        self.derive = dict()
+        self.gauge = dict()
+        self.rate = dict()
 
     def initialize_counters(self, keys):
         """Create a new set of counters for the given key list
@@ -192,3 +229,187 @@ class Plugin(object):
 
         """
         return self.component_data()
+
+
+class SocketStatsPlugin(Plugin):
+    """Connect to a socket and collect stats data"""
+    DEFAULT_HOST = 'localhost'
+    DEFAULT_PORT = 0
+    SOCKET_RECV_MAX = 10485760
+
+    def connect(self):
+        """Top level interface to create a socket and connect it to the
+        socket.
+
+        :rtype: socket
+
+        """
+        try:
+            connection = self.socket_connect()
+        except socket.error as error:
+            LOGGER.error('Error connecting to %s: %s',
+                         self.__class__.__name__, error)
+        else:
+            return connection
+
+    def fetch_data(self, connection):
+        """Read the data from the socket
+
+        :param  socket connection: The connection
+
+        """
+        LOGGER.debug('Fetching data')
+        return connection.recv(self.SOCKET_RECV_MAX)
+
+    def poll(self):
+        """This method is called after every sleep interval. If the intention
+        is to use an IOLoop instead of sleep interval based daemon, override
+        the run method.
+
+        """
+        self.initialize()
+
+        # Fetch the data from the remote socket
+        connection = self.connect()
+        if not connection:
+            LOGGER.error('%s could not connect, skipping poll interval',
+                         self.__class__.__name__)
+            return
+
+        data = self.fetch_data(connection)
+        connection.close()
+
+        if data:
+            self.add_datapoints(data)
+            self.finish()
+        else:
+            self.error_message()
+
+    def socket_connect(self):
+        """Low level interface to create a socket and connect to it.
+
+        :rtype: socket
+
+        """
+        if 'path' in self.config:
+            if path.exists(self.config['path']):
+                LOGGER.debug('Connecting to UNIX domain socket: %s',
+                             self.config['path'])
+                connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                connection.connect(self.config['path'])
+            else:
+                LOGGER.error('UNIX domain socket path does not exist: %s',
+                             self.config['path'])
+                return None
+        else:
+            remote_host = (self.config.get('host', self.DEFAULT_HOST),
+                           self.config.get('port', self.DEFAULT_PORT))
+            LOGGER.debug('Connecting to %s:%s', remote_host)
+            connection = socket.socket()
+            connection.connect(remote_host)
+        return connection
+
+
+class HTTPStatsPlugin(Plugin):
+    """Extend the Plugin class overriding poll for targets that provide data
+    via HTTP protocol.
+
+    """
+    def fetch_data(self):
+        """Fetch the data from the stats URL
+
+        :rtype: str
+
+        """
+        data = self.http_get()
+        return data.content if data else ''
+
+    def http_get(self):
+        """Fetch the data from the stats URL
+
+        :rtype: requests.models.Response
+
+        """
+        LOGGER.info('Polling %s Stats at %s',
+                    self.__class__.__name__, self.stats_url)
+        try:
+            response = requests.get(**self.request_kwargs)
+        except requests.ConnectionError as error:
+            LOGGER.error('Error polling stats: %s', error)
+            return ''
+
+        if response.status_code >= 300:
+            LOGGER.error('Error response from %s (%s): %s', self.stats_url,
+                         response.status_code, response.content)
+            return None
+        return response
+
+    def poll(self):
+        """Poll HTTP server for stats data"""
+        self.initialize()
+        data = self.fetch_data()
+        if data:
+            self.add_datapoints(data)
+        self.finish()
+
+    @property
+    def stats_url(self):
+        """Return the configured URL in a uniform way for all HTTP based data
+        sources.
+
+        :rtype: str
+
+        """
+        netloc = self.config.get('host', 'localhost')
+        if self.config.get('port'):
+            netloc += ':%s' % self.config['port']
+
+        return urlparse.urlunparse((self.config.get('scheme', 'http'),
+                                    netloc,
+                                    self.config.get('path', '/'),
+                                    self.config.get('query', None),
+                                    None, None, None))
+
+    @property
+    def request_kwargs(self):
+        """Return kwargs for a HTTP request.
+
+        :rtype: dict
+
+        """
+        kwargs = {'url': self.stats_url}
+        if (self.config.get('scheme') == 'https' and
+                self.config.get('verify_ssl_cert')):
+            kwargs['verify'] = self.config.get('verify_ssl_cert', True)
+
+        if 'username' in self.config and 'password' in self.config:
+            kwargs['auth'] = (self.config['username'], self.config['password'])
+
+        return kwargs
+
+
+class JSONStatsPlugin(HTTPStatsPlugin):
+    """Extend the Plugin overriding poll for targets that provide JSON output
+    for stats collection
+
+    """
+    def fetch_data(self):
+        """Fetch the data from the stats URL
+
+        :rtype: dict
+
+        """
+        data = self.http_get()
+        try:
+            return data.json() if data else {}
+        except Exception as error:
+            LOGGER.error('JSON decoding error: %r', error)
+        return {}
+
+    def poll(self):
+        """Poll HTTP JSON endpoint for stats data"""
+        self.initialize()
+        data = self.fetch_data()
+        if data:
+            self.add_datapoints(data)
+        self.finish()
