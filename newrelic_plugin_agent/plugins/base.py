@@ -318,6 +318,7 @@ class HTTPStatsPlugin(Plugin):
 
     """
     DEFAULT_PATH = '/'
+    DEFAULT_QUERY = None
 
     def fetch_data(self):
         """Fetch the data from the stats URL
@@ -371,8 +372,10 @@ class HTTPStatsPlugin(Plugin):
         return urlparse.urlunparse((self.config.get('scheme', 'http'),
                                     netloc,
                                     self.config.get('path', self.DEFAULT_PATH),
-                                    self.config.get('query'),
-                                    None, None))
+                                    None,
+                                    self.config.get('query',
+                                                    self.DEFAULT_QUERY),
+                                    None))
 
     @property
     def request_kwargs(self):
