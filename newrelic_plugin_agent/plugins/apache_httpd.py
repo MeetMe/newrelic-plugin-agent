@@ -4,8 +4,6 @@ ApacheHTTPD Support
 """
 import logging
 import re
-import requests
-import time
 
 from newrelic_plugin_agent.plugins import base
 
@@ -19,7 +17,9 @@ PATTERN = re.compile(r'Total Accesses\:\s(?P<accesses>\d+)\nTotal\skBytes\:'
                      r'(?P<bytes_per_request>[\d\.]+)\nBusyWorkers\:\s'
                      r'(?P<busy>[\d\.]+)\nIdleWorkers\:\s(?P<idle>[\d\.]+)\n')
 
-class ApacheHTTPD(base.Plugin):
+class ApacheHTTPD(base.HTTPStatsPlugin):
+
+    DEFAULT_QUERY = 'auto'
 
     GUID = 'com.meetme.newrelic_apache_httpd_agent'
 
@@ -45,13 +45,19 @@ class ApacheHTTPD(base.Plugin):
              'requests_per_sec': 'requests/sec',
              'accesses': ''}
 
+    def error_message(self):
+            LOGGER.error('Could not match any of the stats, please make ensure '
+                         'Apache HTTPd is configured correctly. If you report '
+                         'this as a bug, please include the full output of the '
+                         'status page from %s in your ticket', self.stats_url)
+
     def add_datapoints(self, stats):
         """Add all of the data points for a node
 
         :param str stats: The stats content from Apache as a string
 
         """
-        matches = PATTERN.match(stats)
+        matches = PATTERN.match(stats or '')
         if matches:
             for key in self.KEYS.keys():
                 try:
@@ -67,58 +73,3 @@ class ApacheHTTPD(base.Plugin):
                 else:
                     self.add_derive_value(self.KEYS[key], self.TYPES[key],
                                           value)
-        else:
-            LOGGER.error('Could not match any of the stats, please make ensure '
-                         'Apache HTTPd is configured correctly. If you report '
-                         'this as a bug, please include the full output of the '
-                         'status page from %s in your ticket',
-                         self.apache_stats_url)
-
-    @property
-    def apache_stats_url(self):
-        if 'scheme' not in self.config:
-            self.config['scheme'] = 'http'
-        return '%(scheme)s://%(host)s:%(port)s%(path)s?auto' % self.config
-
-    def fetch_data(self):
-        """Fetch the data from the ApacheHTTPD server
-
-        :rtype: str
-
-        """
-        kwargs = {'url': self.apache_stats_url,
-                  'verify': self.config.get('verify_ssl_cert', True)}
-        if 'username' in self.config and 'password' in self.config:
-            kwargs['auth'] = (self.config['username'], self.config['password'])
-
-        try:
-            response = requests.get(**kwargs)
-        except requests.ConnectionError as error:
-            LOGGER.error('Error polling ApacheHTTPD: %s', error)
-            return {}
-
-        if response.status_code == 200:
-            try:
-                return response.content
-            except Exception as error:
-                LOGGER.error('JSON decoding error: %r', error)
-                return ''
-        LOGGER.error('Error response from %s (%s): %s', self.apache_stats_url,
-                     response.status_code, response.content)
-        return ''
-
-    def poll(self):
-        LOGGER.info('Polling ApacheHTTPD via %s', self.apache_stats_url)
-        start_time = time.time()
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
-        data = self.fetch_data()
-        if data:
-            self.add_datapoints(data)
-            LOGGER.info('Polling complete in %.2f seconds',
-                        time.time() - start_time)
-        else:
-            LOGGER.error('No data was returned from Apache. Ensure '
-                         'configuration is correct and that %s is reachable '
-                         'by the agent', self.apache_stats_url)
