@@ -1,19 +1,17 @@
-# -*- coding: UTF-8 -*-
 """
 Riak Plugin
 
 """
 import logging
-import requests
-import time
 
 from newrelic_plugin_agent.plugins import base
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Riak(base.Plugin):
+class Riak(base.JSONStatsPlugin):
 
+    DEFAULT_PATH = '/stats'
     GUID = 'com.meetme.newrelic_riak_agent'
 
     def add_datapoints(self, stats):
@@ -171,47 +169,3 @@ class Riak(base.Plugin):
                               stats.get('vnode_index_writes_total', 0))
         self.add_derive_value('VNodes/Index', '',
                               stats.get('vnode_writes_postings_total', 0))
-
-    @property
-    def riak_stats_url(self):
-        if 'scheme' not in self.config:
-            self.config['scheme'] = 'http'
-        return '%(scheme)s://%(host)s:%(port)s/stats' % self.config
-
-    def fetch_data(self):
-        """Fetch the data from the Riak server for the specified data type
-
-        :rtype: dict
-
-        """
-        kwargs = {'url': self.riak_stats_url,
-                  'verify': self.config.get('verify_ssl_cert', True)}
-        if 'username' in self.config and 'password' in self.config:
-            kwargs['auth'] = (self.config['username'], self.config['password'])
-
-        try:
-            response = requests.get(**kwargs)
-        except requests.ConnectionError as error:
-            LOGGER.error('Error polling Riak: %s', error)
-            return {}
-
-        if response.status_code == 200:
-            try:
-                return response.json()
-            except Exception as error:
-                LOGGER.error('JSON decoding error: %r', error)
-                return {}
-
-        LOGGER.error('Error response from %s (%s): %s', self.riak_stats_url,
-                     response.status_code, response.content)
-        return {}
-
-    def poll(self):
-        LOGGER.info('Polling Riak via %s', self.riak_stats_url)
-        start_time = time.time()
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
-        self.add_datapoints(self.fetch_data())
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
