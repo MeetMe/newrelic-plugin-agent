@@ -19,6 +19,7 @@ class Plugin(object):
 
     def __init__(self, config, poll_interval, last_interval_values=None):
         self.config = config
+        LOGGER.debug('%s config: %r', self.__class__.__name__, self.config)
         self.poll_interval = poll_interval
         self.poll_start_time = 0
 
@@ -141,7 +142,6 @@ class Plugin(object):
 
     def initialize(self):
         """Empty stats collection dictionaries for the polling interval"""
-        LOGGER.info('Polling %s', self.__class__.__name__)
         self.poll_start_time = time.time()
         self.derive_values = dict()
         self.gauge_values = dict()
@@ -269,6 +269,7 @@ class SocketStatsPlugin(Plugin):
         the run method.
 
         """
+        LOGGER.info('Polling %s', self.__class__.__name__)
         self.initialize()
 
         # Fetch the data from the remote socket
@@ -392,6 +393,7 @@ class HTTPStatsPlugin(Plugin):
         if 'username' in self.config and 'password' in self.config:
             kwargs['auth'] = (self.config['username'], self.config['password'])
 
+        LOGGER.debug('Request kwargs: %r', kwargs)
         return kwargs
 
 

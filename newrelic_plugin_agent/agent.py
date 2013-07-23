@@ -8,6 +8,7 @@ import json
 import logging
 import os
 from yaml import parser
+import platform
 import requests
 import socket
 import Queue as queue
@@ -43,12 +44,21 @@ class NewRelicPluginAgent(clihelper.Controller):
         self.threads = list()
         self._wake_interval = self.application_config.get('poll_interval',
                                                           self.WAKE_INTERVAL)
-        self.endpoint = self.application_config.get('endpoint', self.PLATFORM_URL)
+        self.endpoint = self.application_config.get('endpoint',
+                                                    self.PLATFORM_URL)
         self.http_headers = {'Accept': 'application/json',
                              'Content-Type': 'application/json',
                              'X-License-Key': self.license_key}
         self.derive_last_interval = dict()
         self.min_max_values = dict()
+        distro = ' '.join(platform.linux_distribution()).strip()
+        os = platform.platform(True, True)
+        if distro:
+            os += ' (%s)' % distro
+        LOGGER.debug('Agent v%s initialized, %s %s on %s',
+                     __version__,
+                     platform.python_implementation(),
+                     platform.python_version(), os)
 
     @property
     def agent_data(self):
