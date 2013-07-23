@@ -6,7 +6,6 @@ import datetime
 from pymongo import errors
 import logging
 import pymongo
-import time
 
 from newrelic_plugin_agent.plugins import base
 
@@ -217,11 +216,6 @@ class MongoDB(base.Plugin):
                 LOGGER.critical('Could not fetch stats: %s', error)
 
     def poll(self):
-        LOGGER.info('Polling MongoDB at %(host)s:%(port)i', self.config)
-        start_time = time.time()
-        self.derive = dict()
-        self.gauge = dict()
-        self.rate = dict()
+        self.initialize()
         self.get_and_add_stats()
-        LOGGER.info('Polling complete in %.2f seconds',
-                    time.time() - start_time)
+        self.finish()
