@@ -121,7 +121,6 @@ class Edgecast(base.Plugin):
         LOGGER.info('Fetching remote resource from %s', url)
         response = requests.get(url, headers=self.request_headers)
         if response.status_code != 200:
-            print response.content
             LOGGER.error('Unexpected response (%s): %s',
                          response.status_code, response.content)
             return dict()
