@@ -69,19 +69,17 @@ Installing Additional Requirements
 ----------------------------------
 
 To use the MongoDB the mongodb library is required. For the pgBouncer or PostgreSQL plugin you must install the psycopg2 library. To easily do
-this, make sure you have the latest version of pip installed (http://www.pip-installer.org/). This should be done after installing the agent itself.
+this, make sure you have the latest version of pip installed (http://www.pip-installer.org/). This should be done after installing the agent itself:
 
-Once installed, from inside the source directory run the following command:
-
-    pip install -e .[mongodb]
+    pip install -e newrelic_plugin_agent[mongodb]
 
 or
 
-    pip install -e .[pgbouncer]
+    pip install -e newrelic_plugin_agent[pgbouncer]
 
 or
 
-    pip install -e .[postgresql]
+    pip install -e newrelic_plugin_agent[postgresql]
 
 Plugin Configuration Stanzas
 ----------------------------
