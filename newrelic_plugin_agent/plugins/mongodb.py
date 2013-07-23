@@ -184,7 +184,7 @@ class MongoDB(base.Plugin):
         for database in databases:
             db = client[database]
             try:
-                if database == database[0]:
+                if database == databases[0]:
                     if self.config.get('admin_username'):
                         db.authenticate(self.config['admin_username'],
                                         self.config.get('admin_password'))
