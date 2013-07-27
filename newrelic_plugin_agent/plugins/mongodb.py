@@ -99,26 +99,27 @@ class MongoDB(base.Plugin):
                              timems.get('remapPrivateView', 0))
 
         locks = stats.get('globalLock', dict())
-        self.add_derive_value('Global Locks/Held', 'us',
-                              locks.get('lockTime', 0))
-        self.add_derive_value('Global Locks/Ratio', '',
-                              locks.get('ratio', 0))
+        if locks:
+            self.add_derive_value('Global Locks/Held', 'us',
+                                  locks.get('lockTime', 0))
+            self.add_derive_value('Global Locks/Ratio', '',
+                                  locks.get('ratio', 0))
 
-        active = locks.get('activeClients')
-        self.add_derive_value('Global Locks/Active Clients/Total', '',
-                              active.get('total', 0))
-        self.add_derive_value('Global Locks/Active Clients/Readers', '',
-                              active.get('readers', 0))
-        self.add_derive_value('Global Locks/Active Clients/Writers', '',
-                              active.get('writers', 0))
+            active = locks.get('activeClients')
+            self.add_derive_value('Global Locks/Active Clients/Total', '',
+                                  active.get('total', 0))
+            self.add_derive_value('Global Locks/Active Clients/Readers', '',
+                                  active.get('readers', 0))
+            self.add_derive_value('Global Locks/Active Clients/Writers', '',
+                                  active.get('writers', 0))
 
-        queue = locks.get('currentQueue')
-        self.add_derive_value('Global Locks/Queue/Total', '',
-                              queue.get('total', 0))
-        self.add_derive_value('Global Locks/Queue/Readers', '',
-                              queue.get('readers', 0))
-        self.add_derive_value('Global Locks/Queue/Writers', '',
-                              queue.get('writers', 0))
+            queue = locks.get('currentQueue')
+            self.add_derive_value('Global Locks/Queue/Total', '',
+                                  queue.get('total', 0))
+            self.add_derive_value('Global Locks/Queue/Readers', '',
+                                  queue.get('readers', 0))
+            self.add_derive_value('Global Locks/Queue/Writers', '',
+                                  queue.get('writers', 0))
 
         index = stats.get('indexCounters', dict())
         self.add_derive_value('Index/Accesses', '', index.get('accesses', 0))
