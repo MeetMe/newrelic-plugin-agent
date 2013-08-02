@@ -37,6 +37,13 @@ check_config() {
   fi
 }
 
+check_pid() {
+  if [ ! -d /var/run/newrelic ]; then
+    install -m 777 -o newrelic -g newrelic -d /var/run/newrelic
+    log_action_msg "PID directory was not found and created" || true
+  fi;
+}
+
 PIDFILE=$(sed -n -e 's/^[ ]*pidfile[ ]*:[ ]*//p' -e 's/[ ]*$//' $CONFIG)
 
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin/:usr/local/sbin:/usr/local/bin"
@@ -46,6 +53,7 @@ case "$1" in
     log_daemon_msg "Starting $DESC" "$NAME" || true
     check_daemon
     check_config
+    check_pid
 
     if [ -s $PIDFILE ] && kill -0 $(cat $PIDFILE) > /dev/null 2>&1; then
       log_action_msg "apparently already running" || true
