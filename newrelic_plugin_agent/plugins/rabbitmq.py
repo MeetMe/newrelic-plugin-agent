@@ -210,6 +210,7 @@ class RabbitMQ(base.Plugin):
         :param list queue_data: The raw queue data list
 
         """
+        count = 0
         available, consumers, deliver, publish, redeliver, unacked = \
             0, 0, 0, 0, 0, 0
         for count, queue in enumerate(queue_data):
