@@ -72,7 +72,7 @@ class PostgreSQL(base.Plugin):
         self.add_statio_stats(cursor)
         self.add_table_stats(cursor)
         self.add_transaction_stats(cursor)
-        
+
         # add_wal_metrics needs superuser to get directory listings
         if self.config.get('superuser', True):
             self.add_wal_stats(cursor)
@@ -226,14 +226,14 @@ class PostgreSQL(base.Plugin):
 
     def connect(self):
         """Connect to PostgreSQL, returning the connection object.
-        
+
         :rtype: psycopg2.connection
-        
+
         """
         conn = psycopg2.connect(self.dsn)
         conn.set_isolation_level(extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         return conn
-    
+
     @property
     def dsn(self):
         """Create a DSN to connect to
@@ -246,10 +246,15 @@ class PostgreSQL(base.Plugin):
         if self.config.get('password'):
             dsn += " password='%s'" % self.config['password']
         return dsn
-    
+
     def poll(self):
         self.initialize()
-        self.connection = self.connect()
+        try:
+            self.connection = self.connect()
+        except psycopg2.OperationalError as error:
+            LOGGER.critical('Could not connect to %s, skipping stats run: %s',
+                            self.__class__.__name__, error)
+            return
         cursor = self.connection.cursor(cursor_factory=extras.DictCursor)
         self.add_stats(cursor)
         cursor.close()
@@ -259,10 +264,10 @@ class PostgreSQL(base.Plugin):
     @property
     def server_version(self):
         """Return connection server version in PEP 369 format
-        
+
         :returns: tuple
-        
+
         """
-        return (self.connection.server_version % 1000000 / 10000, 
-                self.connection.server_version % 10000 / 100, 
+        return (self.connection.server_version % 1000000 / 10000,
+                self.connection.server_version % 10000 / 100,
                 self.connection.server_version % 100)
