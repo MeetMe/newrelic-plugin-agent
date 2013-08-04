@@ -3,12 +3,11 @@ PHP APC Support
 
 """
 import logging
-import requests
-import time
 
 from newrelic_plugin_agent.plugins import base
 
 LOGGER = logging.getLogger(__name__)
+
 
 class APC(base.JSONStatsPlugin):
 
