@@ -12,6 +12,7 @@ NewRelic platform. Currently supported backend systems are:
 - MongoDB
 - Nginx
 - pgBouncer
+- PHP FPM
 - PostgreSQL
 - RabbitMQ
 - Redis
@@ -326,6 +327,14 @@ Configuration Example
          #username: foo
          #password: bar
          #verify_ssl_cert: t
+
+      php_fpm:
+        - name: fpm-pool
+          scheme: https
+          host: localhost
+          port: 443
+          path: /fpm_status
+          query: json
 
       postgresql:
         - host: localhost
