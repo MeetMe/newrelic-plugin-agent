@@ -27,17 +27,20 @@ for package_dir in package_directories:
             if dir_name[:21] == 'newrelic_plugin_agent' and \
                             dir_name[-8:] == 'egg-info':
                 filename = '%s/%s/installed-files.txt' % (package_dir, dir_name)
-                with open(filename, 'r') as handle:
-                    output = []
-                    for line in handle:
-                        safe = True
-                        for dir_path in prune:
-                            if line[-(len(dir_path) + 1):].strip() == dir_path:
-                                safe = False
-                                fixed = True
-                                break
-                        if safe:
-                            output.append(line.strip())
+                try:
+                    with open(filename, 'r') as handle:
+                        output = []
+                        for line in handle:
+                            safe = True
+                            for dir_path in prune:
+                                if line[-(len(dir_path) + 1):].strip() == dir_path:
+                                    safe = False
+                                    fixed = True
+                                    break
+                            if safe:
+                                output.append(line.strip())
+                except IOError:
+                    continue
                 if fixed:
                     with open(filename, 'w') as handle:
                         handle.write('\n'.join(output))
