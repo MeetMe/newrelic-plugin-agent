@@ -64,7 +64,7 @@ data_files[base_path] = ['LICENSE',
                          'fix_nrp_manifest.py']
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
-install_requires = ['clihelper>=1.7.0', 'requests', 'dnspython']
+install_requires = ['clihelper>=1.7.0', 'requests']
 tests_require = []
 extras_require = {'mongodb': ['pymongo'],
                   'pgbouncer': ['psycopg2'],
