@@ -159,8 +159,16 @@ class MongoDB(base.Plugin):
                               extra.get('page_faults', 0))
 
     def connect(self):
-        return pymongo.MongoClient(self.config.get('host', 'localhost'),
-                                   self.config.get('port', 27017))
+        kwargs = {'host': self.config.get('host', 'localhost'),
+                  'port': self.config.get('port', 27017)}
+        for key in ['ssl', 'ssl_keyfile', 'ssl_certfile',
+                    'ssl_cert_reqs', 'ssl_ca_certs']:
+            if key in self.config:
+                kwargs[key] = self.config[key]
+        try:
+            return pymongo.MongoClient(**kwargs)
+        except pymongo.errors.ConnectionFailure as error:
+            LOGGER.error('Could not connect to MongoDB: %s', error)
 
     def get_and_add_db_stats(self):
         """Fetch the data from the MongoDB server and add the datapoints
@@ -181,6 +189,8 @@ class MongoDB(base.Plugin):
         """
         LOGGER.debug('Processing list of mongo databases')
         client = self.connect()
+        if not client:
+            return
         for database in databases:
             LOGGER.debug('Collecting stats for %s', database)
             db = client[database]
@@ -197,6 +207,8 @@ class MongoDB(base.Plugin):
         """
         LOGGER.debug('Processing dict of mongo databases')
         client = self.connect()
+        if not client:
+            return
         db_names = databases.keys()
         for database in db_names:
             db = client[database]
@@ -205,12 +217,16 @@ class MongoDB(base.Plugin):
                     db.authenticate(databases[database]['username'],
                                     databases[database].get('password'))
                 self.add_datapoints(database, db.command('dbStats'))
+                if 'username' in databases[database]:
+                    db.logout()
             except errors.OperationFailure as error:
                 LOGGER.critical('Could not fetch stats: %s', error)
 
     def get_and_add_server_stats(self):
         LOGGER.debug('Fetching server stats')
         client = self.connect()
+        if not client:
+            return
         if self.config.get('admin_username'):
             client.db.authenticate(self.config['admin_username'],
                                    self.config.get('admin_password'))
