@@ -218,8 +218,6 @@ The user specified must have access to all virtual hosts you wish to monitor and
 
 If you are monitoring RabbitMQ via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
 
-As of 1.0.13 there is "detailed" mode which adds consumer counts by hostname for queues. This is a slow inspection and should be avoided on RabbitMQ clusters with large queue counts.
-
 Redis Installation Notes
 ------------------------
 For Redis daemons that are password protected, add the password configuration value, otherwise omit it. The Redis configuration section allows for multiple redis servers. The syntax to poll multiple servers is in the example below.

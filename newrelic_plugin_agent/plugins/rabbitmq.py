@@ -5,9 +5,6 @@ rabbitmq
 import logging
 import requests
 import time
-import urllib
-from dns import resolver
-from dns import reversename
 
 from newrelic_plugin_agent.plugins import base
 
@@ -30,8 +27,6 @@ class RabbitMQ(base.Plugin):
                    'get_no_ack': 0,
                    'publish': 0,
                    'redeliver': 0}
-
-    dns_cache = dict()
 
     def add_node_datapoints(self, node_data, queue_data, channel_data):
         """Add all of the data points for a node
@@ -181,7 +176,6 @@ class RabbitMQ(base.Plugin):
                 total[key] += idle_count
                 values[key].append(idle_count)
 
-
         base_name = 'Node/%s/Consumers' % node
         self.add_gauge_value('%s/Count' % base_name, 'consumers',
                              total['consumers'],
@@ -214,12 +208,6 @@ class RabbitMQ(base.Plugin):
         available, consumers, deliver, publish, redeliver, unacked = \
             0, 0, 0, 0, 0, 0
         for count, queue in enumerate(queue_data):
-            if self.detailed:
-                LOGGER.info('Querying info for queue %i of %i',
-                            count + 1, len(queue_data))
-                queue.update(self.fetch_queue_details(queue['vhost'],
-                                                      queue['name']))
-
             message_stats = queue.get('message_stats', dict())
             if not message_stats:
                 message_stats = self.DUMMY_STATS
@@ -257,21 +245,6 @@ class RabbitMQ(base.Plugin):
             redeliver += message_stats.get('redeliver', 0)
             unacked += queue.get('messages_unacknowledged', 0)
 
-            if self.detailed:
-                consumers = dict()
-                for channel in queue.get('consumer_details', {}):
-                    host = self.consumer_host(channel)
-                    if host not in consumers:
-                        consumers[host] = 0
-                    LOGGER.info('Consumer Host: %s', host)
-                    consumers[host] += 1
-
-                for consumer in consumers:
-                    stat_name = 'Queue/%s/%s/Consumer Host/%s' % \
-                                (vhost, queue['name'], consumer)
-                    LOGGER.info('Stat: %s', stat_name)
-                    self.add_gauge_value(stat_name, '', consumers[consumer])
-
         # Summary stats
         self.add_gauge_value('Summary/Messages/Available', '',
                              available, count=count)
@@ -283,37 +256,6 @@ class RabbitMQ(base.Plugin):
                               redeliver, count=count)
         self.add_gauge_value('Summary/Messages/Unacknowledged', '',
                              unacked, count=count)
-
-    def consumer_host(self, channel):
-        """Return the consumer hostname if configured, doing
-        reverse DNS and caching the result in the module level.
-
-        :param dict channel: The channel details
-        :rtype: str
-
-        """
-        name = channel['channel_details']['name']
-        host = name[0:name.find(':')]
-        if not self.config.get('resolve_dns', False):
-            return host
-        if host not in RabbitMQ.dns_cache:
-            address = reversename.from_address(host)
-            try:
-                host = resolver.query(address, 'PTR')[0]
-            except (resolver.NXDOMAIN, IndexError):
-                pass
-        RabbitMQ.dns_cache[host] = host
-        return RabbitMQ.dns_cache[host]
-
-    @property
-    def detailed(self):
-        """Return if the stats should include the detailed
-        stats.
-
-        :rtype: bool
-
-        """
-        return self.config.get('detailed', False)
 
     def http_get(self, url, params=None):
         """Make a HTTP request for the URL.
@@ -344,7 +286,7 @@ class RabbitMQ(base.Plugin):
 
         """
         url = '%s/%s' % (self.rabbitmq_base_url, data_type)
-        params = {'columns': ','.join(columns)} if columns else None
+        params = {'columns': ','.join(columns)} if columns else {}
         response = self.http_get(url, params)
         if not response or response.status_code != 200:
             if response:
@@ -379,13 +321,7 @@ class RabbitMQ(base.Plugin):
         :rtype: list
 
         """
-        if self.config.get('detailed', False):
-            return self.fetch_data('queues', ['name', 'vhost', 'node'])
         return self.fetch_data('queues')
-
-    def fetch_queue_details(self, vhost, queue):
-        return self.fetch_data('queues/%s/%s' % (urllib.quote(vhost, ''),
-                                                 queue))
 
     def poll(self):
         """Poll the RabbitMQ server"""
@@ -422,6 +358,6 @@ class RabbitMQ(base.Plugin):
         secure = self.config.get('secure', False)
         host = self.config.get('host', self.DEFAULT_HOST)
         if secure:
-           return 'https://' + host + ':' + str(port) + '/api'
+            return 'https://' + host + ':' + str(port) + '/api'
         else:
-           return 'http://' + host + ':' + str(port) + '/api'
+            return 'http://' + host + ':' + str(port) + '/api'
