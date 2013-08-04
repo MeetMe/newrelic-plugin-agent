@@ -99,27 +99,26 @@ class MongoDB(base.Plugin):
                              timems.get('remapPrivateView', 0))
 
         locks = stats.get('globalLock', dict())
-        if locks:
-            self.add_derive_value('Global Locks/Held', 'us',
-                                  locks.get('lockTime', 0))
-            self.add_derive_value('Global Locks/Ratio', '',
-                                  locks.get('ratio', 0))
+        self.add_derive_value('Global Locks/Held', 'us',
+                              locks.get('lockTime', 0))
+        self.add_derive_value('Global Locks/Ratio', '',
+                              locks.get('ratio', 0))
 
-            active = locks.get('activeClients')
-            self.add_derive_value('Global Locks/Active Clients/Total', '',
-                                  active.get('total', 0))
-            self.add_derive_value('Global Locks/Active Clients/Readers', '',
-                                  active.get('readers', 0))
-            self.add_derive_value('Global Locks/Active Clients/Writers', '',
-                                  active.get('writers', 0))
+        active = locks.get('activeClients', dict())
+        self.add_derive_value('Global Locks/Active Clients/Total', '',
+                              active.get('total', 0))
+        self.add_derive_value('Global Locks/Active Clients/Readers', '',
+                              active.get('readers', 0))
+        self.add_derive_value('Global Locks/Active Clients/Writers', '',
+                              active.get('writers', 0))
 
-            queue = locks.get('currentQueue')
-            self.add_derive_value('Global Locks/Queue/Total', '',
-                                  queue.get('total', 0))
-            self.add_derive_value('Global Locks/Queue/Readers', '',
-                                  queue.get('readers', 0))
-            self.add_derive_value('Global Locks/Queue/Writers', '',
-                                  queue.get('writers', 0))
+        queue = locks.get('currentQueue', dict())
+        self.add_derive_value('Global Locks/Queue/Total', '',
+                              queue.get('total', 0))
+        self.add_derive_value('Global Locks/Queue/Readers', '',
+                              queue.get('readers', 0))
+        self.add_derive_value('Global Locks/Queue/Writers', '',
+                              queue.get('writers', 0))
 
         index = stats.get('indexCounters', dict())
         self.add_derive_value('Index/Accesses', '', index.get('accesses', 0))
@@ -163,7 +162,7 @@ class MongoDB(base.Plugin):
         return pymongo.MongoClient(self.config.get('host', 'localhost'),
                                    self.config.get('port', 27017))
 
-    def get_and_add_stats(self):
+    def get_and_add_db_stats(self):
         """Fetch the data from the MongoDB server and add the datapoints
 
         """
@@ -171,7 +170,7 @@ class MongoDB(base.Plugin):
         if isinstance(databases, list):
             self.get_and_add_db_list(databases)
         else:
-            self.get_and_add_db_with_auth(databases)
+            self.get_and_add_db_dict(databases)
 
     def get_and_add_db_list(self, databases):
         """Handle the list of databases while supporting authentication for
@@ -180,35 +179,28 @@ class MongoDB(base.Plugin):
         :param list databases: The database list
 
         """
+        LOGGER.debug('Processing list of mongo databases')
         client = self.connect()
         for database in databases:
+            LOGGER.debug('Collecting stats for %s', database)
             db = client[database]
             try:
-                if database == databases[0]:
-                    if self.config.get('admin_username'):
-                        db.authenticate(self.config['admin_username'],
-                                        self.config.get('admin_password'))
-                    self.add_server_datapoints(db.command('serverStatus'))
                 self.add_datapoints(database, db.command('dbStats'))
             except errors.OperationFailure as error:
                 LOGGER.critical('Could not fetch stats: %s', error)
 
-    def get_and_add_db_with_auth(self, databases):
-        """Handle the nested database structure with usernnames and password.
+    def get_and_add_db_dict(self, databases):
+        """Handle the nested database structure with username and password.
 
         :param dict databases: The databases data structure
 
         """
+        LOGGER.debug('Processing dict of mongo databases')
         client = self.connect()
         db_names = databases.keys()
         for database in db_names:
             db = client[database]
             try:
-                if database == db_names[0]:
-                    if self.config.get('admin_username'):
-                        db.authenticate(self.config['admin_username'],
-                                        self.config.get('admin_password'))
-                    self.add_server_datapoints(db.command('serverStatus'))
                 if 'username' in databases[database]:
                     db.authenticate(databases[database]['username'],
                                     databases[database].get('password'))
@@ -216,7 +208,17 @@ class MongoDB(base.Plugin):
             except errors.OperationFailure as error:
                 LOGGER.critical('Could not fetch stats: %s', error)
 
+    def get_and_add_server_stats(self):
+        LOGGER.debug('Fetching server stats')
+        client = self.connect()
+        if self.config.get('admin_username'):
+            client.db.authenticate(self.config['admin_username'],
+                                   self.config.get('admin_password'))
+        self.add_server_datapoints(client.db.command('serverStatus'))
+        client.close()
+
     def poll(self):
         self.initialize()
-        self.get_and_add_stats()
+        self.get_and_add_server_stats()
+        self.get_and_add_db_stats()
         self.finish()
