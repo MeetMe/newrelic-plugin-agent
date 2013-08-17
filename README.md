@@ -235,6 +235,8 @@ UWSGI Installation Notes
 ------------------------
 The UWSGI plugin can communicate either over UNIX domain sockets using the path configuration variable or TCP/IP using the host and port variables. Do not include both.
 
+Make sure you have [enabled stats server](http://uwsgi-docs.readthedocs.org/en/latest/StatsServer.html) in your uwsgi config.
+
 Configuration Example
 ---------------------
 
