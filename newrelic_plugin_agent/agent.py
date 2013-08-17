@@ -225,20 +225,39 @@ class NewRelicPluginAgent(clihelper.Controller):
     def setup(self):
         self.last_interval_start = time.time()
 
+    def _get_plugin(self, plugin_path):
+        """ Given a qualified class name (eg. foo.bar.Foo), return the class """
+        try:
+            package, class_name = plugin_path.rsplit('.', 1)
+        except ValueError:
+            return None
+
+        try:
+            module_handle = importlib.import_module(package)
+            class_handle = getattr(module_handle, class_name)
+            return class_handle
+        except:
+            LOGGER.exception('Attempting to import %s', plugin_path)
+            return None
+
     def start_plugin_polling(self):
         enabled_plugins = [key for key in self.application_config.keys()
                            if key not in self.IGNORE_KEYS]
         for plugin in enabled_plugins:
+            LOGGER.info('Enabling plugin: %s', plugin)
+            plugin_class = None
             if plugin in plugins.available:
-                plugin_parts = plugins.available[plugin].split('.')
-                package = '.'.join(plugin_parts[:-1])
-                LOGGER.debug('Attempting to import %s', package)
-                module_handle = importlib.import_module(package)
-                class_handle = getattr(module_handle, plugin_parts[-1])
-                self.poll_plugin(plugin, class_handle,
-                                 self.application_config.get(plugin))
-            else:
+                # plugin alias
+                plugin_class = self._get_plugin(plugins.available[plugin])
+            elif '.' in plugin:
+                # qualified class name
+                plugin_class = self._get_plugin(plugin)
+
+            if not plugin_class:
                 LOGGER.error('Enabled plugin %s not available', plugin)
+                continue
+
+            self.poll_plugin(plugin, plugin_class, self.application_config.get(plugin))
 
     @property
     def threads_running(self):
