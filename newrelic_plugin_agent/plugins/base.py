@@ -386,9 +386,8 @@ class HTTPStatsPlugin(Plugin):
 
         """
         kwargs = {'url': self.stats_url}
-        if (self.config.get('scheme') == 'https' and
-                self.config.get('verify_ssl_cert')):
-            kwargs['verify'] = self.config.get('verify_ssl_cert', True)
+        if self.config.get('scheme') == 'https':
+            kwargs['verify'] = self.config.get('verify_ssl_cert', False)
 
         if 'username' in self.config and 'password' in self.config:
             kwargs['auth'] = (self.config['username'], self.config['password'])
