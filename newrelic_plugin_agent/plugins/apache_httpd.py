@@ -32,7 +32,7 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
             'IdleWorkers': {'type': 'gauge', 'label': 'Workers/Idle'},
             'CPULoad': {'type': 'gauge', 'label': 'CPU Load'},
             'ReqPerSec': {'type': 'gauge', 'label': 'Requests/Velocity',
-                                 'suffix': 'bytes/sec'},
+                          'suffix': 'requests/sec'},
             'Uptime': {'type': 'gauge', 'label': 'Uptime', 'suffix': 'sec'}}
 
     def error_message(self):
