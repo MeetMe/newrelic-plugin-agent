@@ -198,6 +198,22 @@ class RabbitMQ(base.Plugin):
                              None,
                              count['idle_consumers'])
 
+    def track_vhost_queue(self, vhost_name, queue_name):
+        """ Checks whether the data for a vhost queue should be tracked or not
+        The check is based on the user configs, no configs means track everything
+        :param str vhost_name: the virtual host name
+        :param str queue_name: the queue name
+        """
+        TRACK_EVERYTHING = dict()
+        tracked_vhosts = self.config.get('vhosts', TRACK_EVERYTHING)
+        vhost_settings = tracked_vhosts.get(vhost_name) or {}
+        vhost_queues = vhost_settings.get('queues', [])
+        if tracked_vhosts is TRACK_EVERYTHING:
+            return True
+        if vhost_name in tracked_vhosts and vhost_queues == []:
+            return True
+        return queue_name in vhost_queues
+
     def add_queue_datapoints(self, queue_data):
         """Add per-queue datapoints to the processing stack.
 
@@ -214,6 +230,10 @@ class RabbitMQ(base.Plugin):
 
             vhost = 'Default' if queue['vhost'] == '/' else queue['vhost']
             base_name = 'Queue/%s/%s' % (vhost, queue['name'])
+
+            if not self.track_vhost_queue(vhost, queue['name']):
+                continue
+
             self.add_gauge_value('%s/Consumers' % base_name, '',
                                  queue.get('consumers', 0))
 
