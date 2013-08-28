@@ -230,22 +230,24 @@ class PostgreSQL(base.Plugin):
         :rtype: psycopg2.connection
 
         """
-        conn = psycopg2.connect(self.dsn)
+        conn = psycopg2.connect(**self.connection_arguments)
         conn.set_isolation_level(extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         return conn
 
     @property
-    def dsn(self):
-        """Create a DSN to connect to
+    def connection_arguments(self):
+        """Create connection parameter dictionary for psycopg2.connect
 
-        :return str: The DSN to connect
-
+        :return dict: The dictionary to be passed to psycopg2.connect via double-splat
         """
-        dsn = "host='%(host)s' port=%(port)i dbname='%(dbname)s' " \
-              "user='%(user)s'" % self.config
-        if self.config.get('password'):
-            dsn += " password='%s'" % self.config['password']
-        return dsn
+        filtered_args = ["name","superuser"]
+        args = {}
+        for key in set(self.config) - set(filtered_args):
+            if key == 'dbname':
+                args['database'] = self.config[key]
+            else:
+                args[key] = self.config[key]
+        return args
 
     def poll(self):
         self.initialize()
