@@ -228,7 +228,7 @@ class MongoDB(base.Plugin):
         if not client:
             return
         if self.config.get('admin_username'):
-            client.db.authenticate(self.config['admin_username'],
+            client.admin.authenticate(self.config['admin_username'],
                                    self.config.get('admin_password'))
         self.add_server_datapoints(client.db.command('serverStatus'))
         client.close()

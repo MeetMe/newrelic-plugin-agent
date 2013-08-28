@@ -75,7 +75,7 @@ if sys.version_info < (2, 7, 0):
 
 
 setup(name='newrelic_plugin_agent',
-      version='1.1.0',
+      version='1.1.1',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic_plugin_agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],
