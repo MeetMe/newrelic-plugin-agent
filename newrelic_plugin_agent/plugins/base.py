@@ -254,14 +254,21 @@ class SocketStatsPlugin(Plugin):
         else:
             return connection
 
-    def fetch_data(self, connection):
+    def fetch_data(self, connection, read_till_empty=False):
         """Read the data from the socket
 
         :param  socket connection: The connection
 
         """
         LOGGER.debug('Fetching data')
-        return connection.recv(self.SOCKET_RECV_MAX)
+        received = connection.recv(self.SOCKET_RECV_MAX)
+        while read_till_empty:
+            chunk = connection.recv(self.SOCKET_RECV_MAX)
+            if chunk:
+                received += chunk
+            else:
+                break
+        return received
 
     def poll(self):
         """This method is called after every sleep interval. If the intention
