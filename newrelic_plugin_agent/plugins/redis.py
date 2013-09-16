@@ -42,7 +42,7 @@ class Redis(base.SocketStatsPlugin):
             total = hits + misses
 
             if total > 0:
-                self.add_gauge_value('Hit Ratio', '', 100 * hits / total)
+                self.add_gauge_value('Hits Ratio', '', 100 * hits / total)
 
         self.add_derive_value('Keys/Evicted', '',
                               stats.get('evicted_keys', 0))
