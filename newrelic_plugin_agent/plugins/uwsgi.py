@@ -90,7 +90,7 @@ class uWSGI(base.SocketStatsPlugin):
         :return: dict
 
         """
-        data = super(uWSGI, self).fetch_data(connection)
+        data = super(uWSGI, self).fetch_data(connection, read_till_empty=True)
         if data:
             return json.loads(data)
         return {}
