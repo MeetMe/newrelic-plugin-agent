@@ -38,8 +38,9 @@ check_config() {
 }
 
 check_pid() {
-  if [ ! -d /var/run/newrelic ]; then
-    install -m 777 -o newrelic -g newrelic -d /var/run/newrelic
+  PIDDIR=$(dirname $PIDFILE)
+  if [ ! -d $PIDDIR ]; then
+    install -m 777 -o newrelic -g newrelic -d $PIDDIR
     log_action_msg "PID directory was not found and created" || true
   fi;
 }
