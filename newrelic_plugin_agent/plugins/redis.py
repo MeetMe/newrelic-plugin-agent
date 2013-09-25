@@ -28,6 +28,22 @@ class Redis(base.SocketStatsPlugin):
         self.add_gauge_value('Slaves/Connected', '',
                              stats.get('connected_slaves', 0))
 
+        # must happen before saving the new values
+        # but only if we have the previous values
+        if 'Keys/Hit' in self.derive_last_interval.keys() and 'Keys/Missed' in self.derive_last_interval.keys():
+            prev_hits   = self.derive_last_interval['Keys/Hit']
+            prev_misses = self.derive_last_interval['Keys/Missed']
+
+            # hits and misses since the last measure
+            hits   = stats.get('keyspace_hits', 0)   - prev_hits
+            misses = stats.get('keyspace_misses', 0) - prev_misses
+
+            # total queries since the last measure
+            total = hits + misses
+
+            if total > 0:
+                self.add_gauge_value('Hits Ratio', '', 100 * hits / total)
+
         self.add_derive_value('Keys/Evicted', '',
                               stats.get('evicted_keys', 0))
         self.add_derive_value('Keys/Expired', '',
