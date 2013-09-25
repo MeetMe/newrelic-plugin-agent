@@ -202,9 +202,16 @@ The user specified must be a stats user.
 
 PostgreSQL Installation Notes
 -----------------------------
-By default user specified must superuser to get PostgreSQL directory listings. If you want to
-use this plugin without need of superuser permissions use `superuser: False` setting in
-configuration file e.g.:
+By default, the specified user must be superuser to get PostgreSQL
+directory listings. To skip those checks that require superuser
+permissions, use the `superuser: False` setting in the configuration
+file.
+
+Several of the checks take O(N) time where N is the number of relations
+in the database. If you need to use this on a database with a very large
+number of relations, you can skip these, using `relation_stats: False`.
+
+E.g.:
 
     postgresql:
       host: localhost
@@ -213,6 +220,7 @@ configuration file e.g.:
       dbname: postgres
       password: newrelic
       superuser: False
+      relation_stats: False
 
 RabbitMQ Installation Notes
 ---------------------------

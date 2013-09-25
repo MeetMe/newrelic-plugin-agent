@@ -67,10 +67,11 @@ class PostgreSQL(base.Plugin):
         self.add_backend_stats(cursor)
         self.add_bgwriter_stats(cursor)
         self.add_database_stats(cursor)
-        self.add_index_stats(cursor)
         self.add_lock_stats(cursor)
-        self.add_statio_stats(cursor)
-        self.add_table_stats(cursor)
+        if self.config.get('relation_stats', True):
+            self.add_index_stats(cursor)
+            self.add_statio_stats(cursor)
+            self.add_table_stats(cursor)
         self.add_transaction_stats(cursor)
 
         # add_wal_metrics needs superuser to get directory listings
