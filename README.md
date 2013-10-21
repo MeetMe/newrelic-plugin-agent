@@ -8,6 +8,7 @@ NewRelic platform. Currently supported backend systems are:
 - Apache HTTP Server
 - CouchDB
 - Edgecast CDN "Realtime" API
+- HAProxy
 - Memcached
 - MongoDB
 - Nginx
@@ -288,6 +289,16 @@ Configuration Example
           account: ACCOUNT_NUMBER
           token: API_TOKEN
 
+      haproxy:
+        name: my-haproxy-server
+        host: localhost
+        port: 80
+        path: /haproxy?stats
+        scheme: http
+        #verify_ssl_cert: true
+        #username: foo
+        #password: bar
+        
       mongodb:
         name: hostname
         host: localhost
