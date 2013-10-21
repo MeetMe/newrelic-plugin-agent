@@ -224,7 +224,7 @@ E.g.:
 
 RabbitMQ Installation Notes
 ---------------------------
-The user specified must have access to all virtual hosts you wish to monitor and should have either the Administrator tag or the Monitor tag.
+The user specified must have access to all virtual hosts you wish to monitor and should have either the Administrator tag or the Monitoring tag.
 
 If you are monitoring RabbitMQ via a HTTPS connection you can use the verify_ssl_cert configuration value in the httpd configuration section to disable SSL certificate verification.
 
