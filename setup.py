@@ -64,7 +64,7 @@ data_files[base_path] = ['LICENSE',
                          'fix_nrp_manifest.py']
 
 console_scripts = ['newrelic_plugin_agent=newrelic_plugin_agent.agent:main']
-install_requires = ['clihelper>=1.7.0', 'requests']
+install_requires = ['helper>=2.2.2', 'requests>=2.0.0']
 tests_require = []
 extras_require = {'mongodb': ['pymongo'],
                   'pgbouncer': ['psycopg2'],
@@ -75,7 +75,7 @@ if sys.version_info < (2, 7, 0):
 
 
 setup(name='newrelic_plugin_agent',
-      version='1.1.1',
+      version='1.2.0',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/MeetMe/newrelic-plugin-agent',
       packages=['newrelic_plugin_agent', 'newrelic_plugin_agent.plugins'],

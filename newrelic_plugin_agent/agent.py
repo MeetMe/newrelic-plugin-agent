@@ -2,15 +2,14 @@
 Multiple Plugin Agent for the New Relic Platform
 
 """
-import clihelper
+import helper
 import importlib
 import json
 import logging
 import os
-from yaml import parser
-import platform
 import requests
 import socket
+import sys
 import Queue as queue
 import threading
 import time
@@ -21,7 +20,7 @@ from newrelic_plugin_agent import plugins
 LOGGER = logging.getLogger(__name__)
 
 
-class NewRelicPluginAgent(clihelper.Controller):
+class NewRelicPluginAgent(helper.Controller):
     """The NewRelicPluginAgent class implements a agent that polls plugins
     every minute and reports the state to NewRelic.
 
@@ -30,35 +29,40 @@ class NewRelicPluginAgent(clihelper.Controller):
     MAX_METRICS_PER_REQUEST = 10000
     PLATFORM_URL = 'https://platform-api.newrelic.com/platform/v1/metrics'
 
-    def __init__(self, options, arguments):
-        """Create an instance of the controller passing in the debug flag,
-        the options and arguments from the cli parser.
+    def __init__(self, args, operating_system):
+        """Initialize the NewRelicPluginAgent object.
 
-        :param optparse.Values options: OptionParser option values
-        :param list arguments: Left over positional cli arguments
+        :param argparse.Namespace args: Command line arguments
+        :param str operating_system: The operating_system name
 
         """
+        super(NewRelicPluginAgent, self).__init__(args, operating_system)
+        self.derive_last_interval = dict()
+        self.endpoint = self.PLATFORM_URL
+        self.http_headers = {'Accept': 'application/json',
+                             'Content-Type': 'application/json'}
+        self.last_interval_start = None
+        self.min_max_values = dict()
         self.next_wake_interval = self.WAKE_INTERVAL
-        super(NewRelicPluginAgent, self).__init__(options, arguments)
         self.publish_queue = queue.Queue()
         self.threads = list()
-        self._wake_interval = self.application_config.get('poll_interval',
-                                                          self.WAKE_INTERVAL)
-        self.endpoint = self.application_config.get('endpoint',
-                                                    self.PLATFORM_URL)
-        self.http_headers = {'Accept': 'application/json',
-                             'Content-Type': 'application/json',
-                             'X-License-Key': self.license_key}
-        self.derive_last_interval = dict()
-        self.min_max_values = dict()
-        distro = ' '.join(platform.linux_distribution()).strip()
-        os = platform.platform(True, True)
-        if distro:
-            os += ' (%s)' % distro
-        LOGGER.debug('Agent v%s initialized, %s %s on %s',
-                     __version__,
-                     platform.python_implementation(),
-                     platform.python_version(), os)
+        info = tuple([__version__] + list(self.system_platform))
+        LOGGER.info('Agent v%s initialized, %s %s v%s', *info)
+
+    def setup(self):
+        """Setup the internal state for the controller class. This is invoked
+        on Controller.run().
+
+        Items requiring the configuration object should be assigned here due to
+        startup order of operations.
+
+        """
+        if hasattr(self.config.application, 'endpoint'):
+            self.endpoint = self.config.application.endpoint
+        self.http_headers['X-License-Key'] = self.license_key
+        self.last_interval_start = time.time()
+
+
 
     @property
     def agent_data(self):
@@ -78,7 +82,7 @@ class NewRelicPluginAgent(clihelper.Controller):
         :rtype: str
 
         """
-        return self.application_config['license_key']
+        return self.config.application.license_key
 
     def poll_plugin(self, plugin_name, plugin, config):
         """Kick off a background thread to run the processing task.
@@ -96,7 +100,8 @@ class NewRelicPluginAgent(clihelper.Controller):
                                       kwargs={'config': instance,
                                               'name': plugin_name,
                                               'plugin': plugin,
-                                              'poll_interval': self._wake_interval})
+                                              'poll_interval':
+                                                  self.wake_interval})
             thread.run()
             self.threads.append(thread)
 
@@ -113,11 +118,11 @@ class NewRelicPluginAgent(clihelper.Controller):
         self.threads = list()
         self.send_data_to_newrelic()
         duration = time.time() - start_time
-        self.next_wake_interval = self._wake_interval - duration
+        self.next_wake_interval = self.wake_interval - duration
         if self.next_wake_interval < 0:
             LOGGER.warning('Poll interval took greater than %i seconds',
-                           self._wake_interval)
-            self.next_wake_interval = self._wake_interval
+                           self.wake_interval)
+            self.next_wake_interval = self.wake_interval
         LOGGER.info('All stats processed in %.2f seconds, next wake in %.2f',
                     duration, self.next_wake_interval)
 
@@ -162,10 +167,10 @@ class NewRelicPluginAgent(clihelper.Controller):
         :rtype: dict
 
         """
-        if 'proxy' in self.application_config:
+        if 'proxy' in self.config.application:
             return {
-                'http': self.application_config['proxy'],
-                'https': self.application_config['proxy']
+                'http': self.config.application['proxy'],
+                'https': self.config.application['proxy']
             }
         return None
 
@@ -222,11 +227,12 @@ class NewRelicPluginAgent(clihelper.Controller):
         except requests.ConnectionError as error:
             LOGGER.error('Error reporting stats: %s', error)
 
-    def setup(self):
-        self.last_interval_start = time.time()
-
     def _get_plugin(self, plugin_path):
-        """ Given a qualified class name (eg. foo.bar.Foo), return the class """
+        """Given a qualified class name (eg. foo.bar.Foo), return the class
+
+        :rtype: object
+
+        """
         try:
             package, class_name = plugin_path.rsplit('.', 1)
         except ValueError:
@@ -236,37 +242,56 @@ class NewRelicPluginAgent(clihelper.Controller):
             module_handle = importlib.import_module(package)
             class_handle = getattr(module_handle, class_name)
             return class_handle
-        except:
+        except ImportError:
             LOGGER.exception('Attempting to import %s', plugin_path)
             return None
 
     def start_plugin_polling(self):
-        enabled_plugins = [key for key in self.application_config.keys()
-                           if key not in self.IGNORE_KEYS]
-        for plugin in enabled_plugins:
+        """Iterate through each plugin and start the polling process."""
+        for plugin in [key for key in self.config.application.keys()
+                       if key not in self.IGNORE_KEYS]:
             LOGGER.info('Enabling plugin: %s', plugin)
             plugin_class = None
+
+            # If plugin is part of the core agent plugin list
             if plugin in plugins.available:
-                # plugin alias
                 plugin_class = self._get_plugin(plugins.available[plugin])
+
+            # If plugin is in config and a qualified class name
             elif '.' in plugin:
-                # qualified class name
                 plugin_class = self._get_plugin(plugin)
 
+            # If plugin class could not be imported
             if not plugin_class:
                 LOGGER.error('Enabled plugin %s not available', plugin)
                 continue
 
-            self.poll_plugin(plugin, plugin_class, self.application_config.get(plugin))
+            self.poll_plugin(plugin, plugin_class,
+                             self.config.application.get(plugin))
 
     @property
     def threads_running(self):
+        """Return True if any of the child threads are alive
+
+        :rtype: bool
+
+        """
         for thread in self.threads:
             if thread.is_alive():
                 return True
         return False
 
     def thread_process(self, name, plugin, config, poll_interval):
+        """Created a thread process for the given name, plugin class,
+        config and poll interval. Process is added to a Queue object which
+        used to maintain the stack of running plugins.
+
+        :param str name: The name of the plugin
+        :param newrelic_plugin_agent.plugin.Plugin plugin: The plugin class
+        :param dict config: The plugin configuration
+        :param int poll_interval: How often the plugin is invoked
+
+        """
         instance_name = "%s:%s" % (name, config.get('name', 'unnamed'))
         obj = plugin(config, poll_interval,
                      self.derive_last_interval.get(instance_name))
@@ -286,14 +311,21 @@ class NewRelicPluginAgent(clihelper.Controller):
 
 
 def main():
-    clihelper.setup('newrelic_plugin_agent',
-                    'New Relic Platform Plugin Agent',
-                    __version__)
-    try:
-        clihelper.run(NewRelicPluginAgent)
-    except parser.ParserError as error:
-        logging.basicConfig(level=logging.CRITICAL)
-        LOGGER.critical('Parsing of configuration file failed: %s', error)
+    helper.parser.description('The NewRelic Plugin Agent polls various '
+                              'services and sends the data to the NewRelic '
+                              'Platform')
+    helper.parser.name('newrelic_plugin_agent')
+    argparse = helper.parser.get()
+    argparse.add_argument('-C',
+                          action='store_true',
+                          dest='configure',
+                          help='Run interactive configuration')
+    args = helper.parser.parse()
+    if args.configure:
+        print('Configuration')
+        sys.exit(0)
+    helper.start(NewRelicPluginAgent)
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
