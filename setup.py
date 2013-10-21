@@ -56,7 +56,7 @@ else:
 base_path = '%s/opt/newrelic_plugin_agent' % os.getenv('VIRTUAL_ENV', '')
 data_files = dict()
 data_files[base_path] = ['LICENSE',
-                         'README.md',
+                         'README.rst',
                          'etc/init.d/newrelic_plugin_agent.deb',
                          'etc/init.d/newrelic_plugin_agent.rhel',
                          'etc/newrelic/newrelic_plugin_agent.cfg',

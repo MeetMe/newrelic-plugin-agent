@@ -298,7 +298,7 @@ Configuration Example
         #verify_ssl_cert: true
         #username: foo
         #password: bar
-        
+
       mongodb:
         name: hostname
         host: localhost
