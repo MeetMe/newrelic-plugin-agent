@@ -1,11 +1,13 @@
 """
-base
+Base Plugin Classes
 
 """
+import csv
 import logging
 from os import path
 import requests
 import socket
+import tempfile
 import time
 import urlparse
 
@@ -401,6 +403,39 @@ class HTTPStatsPlugin(Plugin):
 
         LOGGER.debug('Request kwargs: %r', kwargs)
         return kwargs
+
+
+class CSVStatsPlugin(HTTPStatsPlugin):
+    """Extend the Plugin overriding poll for targets that provide JSON output
+    for stats collection
+
+    """
+    def fetch_data(self):
+        """Fetch the data from the stats URL
+
+        :rtype: dict
+
+        """
+        data = super(CSVStatsPlugin, self).fetch_data()
+        if not data:
+            return dict()
+        temp = tempfile.TemporaryFile()
+        temp.write(data)
+        temp.seek(0)
+        reader = csv.DictReader(temp)
+        data = list()
+        for row in reader:
+            data.append(row)
+        temp.close()
+        return data
+
+    def poll(self):
+        """Poll HTTP JSON endpoint for stats data"""
+        self.initialize()
+        data = self.fetch_data()
+        if data:
+            self.add_datapoints(data)
+        self.finish()
 
 
 class JSONStatsPlugin(HTTPStatsPlugin):

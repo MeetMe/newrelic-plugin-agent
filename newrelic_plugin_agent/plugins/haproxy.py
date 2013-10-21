@@ -3,41 +3,63 @@ HAProxy Support
 
 """
 import logging
-import re
 
 from newrelic_plugin_agent.plugins import base
 
 LOGGER = logging.getLogger(__name__)
 
-PATTERN = re.compile(r'^current conns = (?P<connections>[1234567890]*);',re.MULTILINE|re.DOTALL)
 
+class HAProxy(base.CSVStatsPlugin):
 
-class HAProxy(base.HTTPStatsPlugin):
-
-    DEFAULT_PATH = 'haproxy?stats'
+    DEFAULT_PATH = 'haproxy?stats;csv'
     GUID = 'com.meetme.newrelic_haproxy_agent'
+    UNIT = {'Bytes': {'In': 'bytes', 'Out': 'bytes'}}
 
-    GAUGES = ['connections']
-    KEYS = {'connections': 'Totals/Connections'}
+    def sum_data(self, stats):
+        """Return the summed data as a dict
 
-    TYPES = {'connections': ''}
+        :rtype: dict
+
+        """
+        data = {'Queue': {'Current': 0, 'Max': 0},
+                'Sessions': {'Current': 0, 'Max': 0, 'Total': 0},
+                'Bytes': {'In': 0, 'Out': 0},
+                'Denied': {'Request': 0, 'Response': 0},
+                'Errors': {'Request': 0, 'Response': 0, 'Connections': 0},
+                'Warnings': {'Retry': 0, 'Redispatch': 0},
+                'Server': {'Downtime': 0}}
+        for row in stats:
+            data['Queue']['Current'] += int(row.get('qcur') or 0)
+            data['Queue']['Max'] += int(row.get('qmax') or 0)
+            data['Sessions']['Current'] += int(row.get('scur') or 0)
+            data['Sessions']['Max'] += int(row.get('smax') or 0)
+            data['Sessions']['Total'] += int(row.get('stot') or 0)
+            data['Bytes']['In'] += int(row.get('bin') or 0)
+            data['Bytes']['Out'] += int(row.get('bout') or 0)
+            data['Denied']['Request'] += int(row.get('dreq') or 0)
+            data['Denied']['Response'] += int(row.get('dresp') or 0)
+            data['Errors']['Request'] += int(row.get('ereq') or 0)
+            data['Errors']['Response'] += int(row.get('eresp') or 0)
+            data['Errors']['Connections'] += int(row.get('econ') or 0)
+            data['Warnings']['Retry'] += int(row.get('wretr') or 0)
+            data['Warnings']['Redispatch'] += int(row.get('wredis') or 0)
+            data['Server']['Downtime'] += int(row.get('downtime') or 0)
+        return data
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node
 
-        :param str stats: The stub stats content
+        :param list stats: The parsed csv content
 
         """
         if not stats:
             return
-        matches = PATTERN.search(stats)
-        if matches:
-            for key in self.KEYS.keys():
-                try:
-                    value = int(matches.group(key))
-                except (IndexError, ValueError):
-                    value = 0
-                if key in self.GAUGES:
-                    self.add_gauge_value(self.KEYS[key], '', value)
-                else:
-                    self.add_derive_value(self.KEYS[key], '', value)
+        stats = self.sum_data(stats)
+
+        for section in [key for key in stats.keys() if key != 'server']:
+            for key in stats[section].keys():
+                self.add_derive_value('%s/%s' % (section, key),
+                                      self.UNIT.get(section,
+                                                    dict()).get(key, ''),
+                                      stats[section][key])
+        self.add_gauge_value('Server/Downtime', 'ms', stats['Server']['Downtime'])
