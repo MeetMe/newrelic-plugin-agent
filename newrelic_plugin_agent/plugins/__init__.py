@@ -7,6 +7,8 @@ available = {
     'apache_httpd': 'newrelic_plugin_agent.plugins.apache_httpd.ApacheHTTPD',
     'couchdb': 'newrelic_plugin_agent.plugins.couchdb.CouchDB',
     'edgecast': 'newrelic_plugin_agent.plugins.edgecast.Edgecast',
+    'elasticsearch':
+        'newrelic_plugin_agent.plugins.elasticsearch.ElasticSearch',
     'haproxy': 'newrelic_plugin_agent.plugins.haproxy.HAProxy',
     'memcached': 'newrelic_plugin_agent.plugins.memcached.Memcached',
     'mongodb': 'newrelic_plugin_agent.plugins.mongodb.MongoDB',

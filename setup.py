@@ -19,9 +19,10 @@ except ImportError:
 
 if newrelic_plugin_agent:
     package_directories.append(path.abspath(path.dirname(newrelic_plugin_agent.__file__) + '/..'))
+
+fixed = False
 for package_dir in package_directories:
     print 'Checking %s for newrelic_plugin_agent installation manifest' % package_dir
-    fixed = False
     for dir_path, dir_names, file_names in os.walk(package_dir):
         for dir_name in dir_names:
             if dir_name[:21] == 'newrelic_plugin_agent' and \
