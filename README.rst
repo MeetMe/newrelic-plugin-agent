@@ -8,6 +8,7 @@ NewRelic platform. Currently supported backend systems are:
 - Apache HTTP Server
 - CouchDB
 - Edgecast CDN "Realtime" API
+- Elasticsearch
 - HAProxy
 - Memcached
 - MongoDB
@@ -288,6 +289,11 @@ Configuration Example
         - name: My Edgecase Account
           account: ACCOUNT_NUMBER
           token: API_TOKEN
+
+      elasticsearch:
+        name: clustername
+        host: localhost
+        port: 9200
 
       haproxy:
         name: my-haproxy-server
