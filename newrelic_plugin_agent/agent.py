@@ -47,7 +47,7 @@ class NewRelicPluginAgent(helper.Controller):
         self._wake_interval = (self.config.application.get('wake_interval') or
                                self.config.application.get('poll_interval') or
                                self.WAKE_INTERVAL)
-        self.next_wake_interval = self._wake_interval
+        self.next_wake_interval = int(self._wake_interval)
         self.publish_queue = queue.Queue()
         self.threads = list()
         info = tuple([__version__] + list(self.system_platform))
@@ -103,7 +103,7 @@ class NewRelicPluginAgent(helper.Controller):
                                               'name': plugin_name,
                                               'plugin': plugin,
                                               'poll_interval':
-                                                  self.wake_interval})
+                                                  int(self._wake_interval)})
             thread.run()
             self.threads.append(thread)
 
@@ -115,17 +115,20 @@ class NewRelicPluginAgent(helper.Controller):
         """
         start_time = time.time()
         self.start_plugin_polling()
+
+        # Sleep for a second while threads are running
         while self.threads_running:
-            self._sleep()
+            time.sleep(1)
+
         self.threads = list()
         self.send_data_to_newrelic()
         duration = time.time() - start_time
         self.next_wake_interval = self._wake_interval - duration
-        if self.next_wake_interval < 0:
+        if self.next_wake_interval < 1:
             LOGGER.warning('Poll interval took greater than %i seconds',
                            duration)
-            self.next_wake_interval = self._wake_interval
-        LOGGER.info('All stats processed in %.2f seconds, next wake in %.2f',
+            self.next_wake_interval = int(self._wake_interval)
+        LOGGER.info('Stats processed in %.2f seconds, next wake in %i seconds',
                     duration, self.next_wake_interval)
 
     def process_min_max_values(self, component):
@@ -229,7 +232,8 @@ class NewRelicPluginAgent(helper.Controller):
         except requests.ConnectionError as error:
             LOGGER.error('Error reporting stats: %s', error)
 
-    def _get_plugin(self, plugin_path):
+    @staticmethod
+    def _get_plugin(plugin_path):
         """Given a qualified class name (eg. foo.bar.Foo), return the class
 
         :rtype: object
