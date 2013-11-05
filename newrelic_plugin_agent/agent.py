@@ -28,6 +28,7 @@ class NewRelicPluginAgent(helper.Controller):
     IGNORE_KEYS = ['license_key', 'poll_interval', 'proxy', 'endpoint']
     MAX_METRICS_PER_REQUEST = 10000
     PLATFORM_URL = 'https://platform-api.newrelic.com/platform/v1/metrics'
+    WAKE_INTERVAL = 60
 
     def __init__(self, args, operating_system):
         """Initialize the NewRelicPluginAgent object.
@@ -43,7 +44,10 @@ class NewRelicPluginAgent(helper.Controller):
                              'Content-Type': 'application/json'}
         self.last_interval_start = None
         self.min_max_values = dict()
-        self.next_wake_interval = self.WAKE_INTERVAL
+        self._wake_interval = (self.config.application.get('wake_interval') or
+                               self.config.application.get('poll_interval') or
+                               self.WAKE_INTERVAL)
+        self.next_wake_interval = self._wake_interval
         self.publish_queue = queue.Queue()
         self.threads = list()
         info = tuple([__version__] + list(self.system_platform))
@@ -61,8 +65,6 @@ class NewRelicPluginAgent(helper.Controller):
             self.endpoint = self.config.application.endpoint
         self.http_headers['X-License-Key'] = self.license_key
         self.last_interval_start = time.time()
-
-
 
     @property
     def agent_data(self):
@@ -118,11 +120,11 @@ class NewRelicPluginAgent(helper.Controller):
         self.threads = list()
         self.send_data_to_newrelic()
         duration = time.time() - start_time
-        self.next_wake_interval = self.wake_interval - duration
+        self.next_wake_interval = self._wake_interval - duration
         if self.next_wake_interval < 0:
             LOGGER.warning('Poll interval took greater than %i seconds',
-                           self.wake_interval)
-            self.next_wake_interval = self.wake_interval
+                           duration)
+            self.next_wake_interval = self._wake_interval
         LOGGER.info('All stats processed in %.2f seconds, next wake in %.2f',
                     duration, self.next_wake_interval)
 
