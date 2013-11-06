@@ -46,7 +46,7 @@ class uWSGI(base.SocketStatsPlugin):
             exceptions += worker.get('exceptions', 0)
             harakiris += worker.get('harakiri_count', 0)
             requests += worker.get('requests', 0)
-            respawns += worker.get('respawns', 0)
+            respawns += worker.get('respawn_count', 0)
             signals += worker.get('signals', 0)
 
             # Add the per worker
