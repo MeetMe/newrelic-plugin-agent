@@ -25,7 +25,8 @@ class NewRelicPluginAgent(helper.Controller):
     every minute and reports the state to NewRelic.
 
     """
-    IGNORE_KEYS = ['license_key', 'poll_interval', 'proxy', 'endpoint']
+    IGNORE_KEYS = ['license_key', 'proxy', 'endpoint',
+                   'poll_interval', 'wake_interval']
     MAX_METRICS_PER_REQUEST = 10000
     PLATFORM_URL = 'https://platform-api.newrelic.com/platform/v1/metrics'
     WAKE_INTERVAL = 60
