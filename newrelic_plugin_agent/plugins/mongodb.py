@@ -121,10 +121,19 @@ class MongoDB(base.Plugin):
                               queue.get('writers', 0))
 
         index = stats.get('indexCounters', dict())
-        self.add_derive_value('Index/Accesses', '', index.get('accesses', 0))
-        self.add_derive_value('Index/Hits', '', index.get('hits', 0))
-        self.add_derive_value('Index/Misses', '', index.get('misses', 0))
-        self.add_derive_value('Index/Resets', '', index.get('resets', 0))
+        btree_index = index.get('btree', dict())
+        self.add_derive_value('Index/Accesses', '',
+                              index.get('accesses', 0) +
+                              btree_index.get('accesses', 0))
+        self.add_derive_value('Index/Hits', '',
+                              index.get('hits', 0) +
+                              btree_index.get('hits', 0))
+        self.add_derive_value('Index/Misses', '',
+                              index.get('misses', 0) +
+                              btree_index.get('misses', 0))
+        self.add_derive_value('Index/Resets', '',
+                              index.get('resets', 0) +
+                              btree_index.get('resets', 0))
 
         mem = stats.get('mem', dict())
         self.add_gauge_value('Memory/Mapped', 'mb',
