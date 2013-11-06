@@ -26,22 +26,22 @@ class Nginx(base.HTTPStatsPlugin):
 
     GAUGES = ['connections', 'reading', 'writing', 'waiting']
     KEYS = {'connections': 'Totals/Connections',
+            'requests': 'Totals/Requests',
             'accepts': 'Requests/Accepted',
             'handled': 'Requests/Handled',
-            'requests': 'Totals/Requests',
             'time': 'Requests/Duration',
             'reading': 'Connections/Reading',
             'writing': 'Connections/Writing',
             'waiting': 'Connections/Waiting'}
 
-    TYPES = {'connections': '',
-             'accepts': '',
-             'handled': '',
-             'requests': '',
-             'reading': '',
+    TYPES = {'connections': 'count',
+             'accepts': 'count',
+             'handled': 'count',
+             'requests': 'count',
+             'reading': 'count',
              'time': 'seconds',
-             'writing': '',
-             'waiting': ''}
+             'writing': 'count',
+             'waiting': 'count'}
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node
@@ -59,8 +59,12 @@ class Nginx(base.HTTPStatsPlugin):
                 except (IndexError, ValueError):
                     value = 0
                 if key in self.GAUGES:
-                    self.add_gauge_value(self.KEYS[key], '', value)
+                    self.add_gauge_value(self.KEYS[key],
+                                         self.TYPES[key],
+                                         value)
                 else:
-                    self.add_derive_value(self.KEYS[key], '', value)
+                    self.add_derive_value(self.KEYS[key],
+                                          self.TYPES[key],
+                                          value)
         else:
             LOGGER.debug('Stats output: %r', stats)
