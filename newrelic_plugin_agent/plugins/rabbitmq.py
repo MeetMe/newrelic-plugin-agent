@@ -19,6 +19,7 @@ class RabbitMQ(base.Plugin):
     DEFAULT_PASSWORD = 'guest'
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 80
+    DEFAULT_API_PATH = '/api'
 
     DUMMY_STATS = {'ack': 0,
                    'deliver': 0,
@@ -377,7 +378,8 @@ class RabbitMQ(base.Plugin):
         port = self.config.get('port', self.DEFAULT_PORT)
         secure = self.config.get('secure', False)
         host = self.config.get('host', self.DEFAULT_HOST)
-        if secure:
-            return 'https://' + host + ':' + str(port) + '/api'
-        else:
-            return 'http://' + host + ':' + str(port) + '/api'
+        api_path = self.config.get('api_path', self.DEFAULT_API_PATH)
+        scheme = 'https' if secure else 'http'
+
+        return '{scheme}://{host}:{port}{api_path}'.format(
+            scheme=scheme, host=host, port=port, api_path=api_path)
