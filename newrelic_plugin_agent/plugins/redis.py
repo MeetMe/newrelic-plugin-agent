@@ -27,6 +27,8 @@ class Redis(base.SocketStatsPlugin):
                              stats.get('connected_clients', 0))
         self.add_gauge_value('Slaves/Connected', '',
                              stats.get('connected_slaves', 0))
+        self.add_gauge_value('Last master IO sync (lag time)', '',
+                             stats.get('master_last_io_seconds_ago', 0))
 
         # must happen before saving the new values
         # but only if we have the previous values
