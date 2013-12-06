@@ -409,6 +409,7 @@ Configuration Example
           username: guest
           password: guest
           #verify_ssl_cert: true
+          api_path: /api
 
       redis:
         - name: localhost
