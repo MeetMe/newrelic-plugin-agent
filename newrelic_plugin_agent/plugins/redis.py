@@ -58,7 +58,9 @@ class Redis(base.SocketStatsPlugin):
         self.add_derive_value('Connections', '',
                               stats.get('total_connections_received', 0))
         self.add_derive_value('Changes Since Last Save', '',
-                              stats.get('changes_since_last_save', 0))
+                              stats.get('rdb_changes_since_last_save', 0))
+        self.add_derive_value('Last Save Time', '',
+                              stats.get('rdb_last_bgsave_time_sec', 0))
 
         self.add_gauge_value('Pubsub/Commands', '',
                              stats.get('pubsub_commands', 0))
