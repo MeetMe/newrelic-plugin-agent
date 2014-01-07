@@ -81,7 +81,7 @@ class Edgecast(base.Plugin):
 
     @property
     def edgecast_base_url(self):
-        return 'http://api.edgecast.com/v2/{API}/customers/%(account)s' % \
+        return 'https://api.edgecast.com/v2/{API}/customers/%(account)s' % \
                self.config
 
     def fetch_bandwidth_values(self):
