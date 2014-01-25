@@ -130,7 +130,7 @@ class Memcached(base.SocketStatsPlugin):
         # Back fill any missed data
         for key in self.KEYS:
             if key not in values:
-                LOGGER.warning('Populating missing element: %s', key)
+                LOGGER.info('Populating missing element with 0: %s', key)
                 values[key] = 0
 
         # Return the values dict
