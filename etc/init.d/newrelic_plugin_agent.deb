@@ -17,6 +17,12 @@ CONFIG=/etc/newrelic/newrelic_plugin_agent.cfg
 DAEMON=/usr/local/bin/newrelic_plugin_agent
 DAEMON_OPTS="-c $CONFIG"
 DESC="New Relic Plugin Agent"
+TIMEOUT=5
+
+# Include newrelic plugin agent defaults if available
+if [ -f /etc/default/$NAME ] ; then
+    . /etc/default/$NAME
+fi
 
 # define LSB log_* functions.
 . /lib/lsb/init-functions
@@ -72,22 +78,22 @@ case "$1" in
     log_daemon_msg "Stopping $DESC" "$NAME" || true
     check_daemon
 
-    if start-stop-daemon --oknodo --stop --pidfile $PIDFILE; then
+    if start-stop-daemon --oknodo --stop --retry $TIMEOUT --pidfile $PIDFILE; then
       log_end_msg 0 || true
     else
       log_end_msg 1 || false
     fi
   ;;
   status)
-   status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
-   ;;
+    status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+  ;;
   restart|force-reload)
-  $0 stop
-  $0 start
+    $0 stop
+    $0 start
   ;;
   *)
     echo "Usage: /etc/init.d/$NAME {start|stop|restart|force-reload}" >&2
-  exit 1
+    exit 1
   ;;
 esac
 
