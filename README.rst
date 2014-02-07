@@ -287,6 +287,7 @@ Configuration Example
     Application:
       license_key: REPLACE_WITH_REAL_KEY
       poll_interval: 60
+      #newrelic_api_timeout: 10
       #proxy: http://localhost:8080
 
       apache_httpd:
