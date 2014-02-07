@@ -241,7 +241,7 @@ class PostgreSQL(base.Plugin):
 
         :return dict: The dictionary to be passed to psycopg2.connect via double-splat
         """
-        filtered_args = ["name","superuser"]
+        filtered_args = ["name","superuser","relation_stats"]
         args = {}
         for key in set(self.config) - set(filtered_args):
             if key == 'dbname':
