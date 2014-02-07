@@ -18,6 +18,9 @@ DAEMON=/usr/local/bin/newrelic_plugin_agent
 DAEMON_OPTS="-c $CONFIG"
 DESC="New Relic Plugin Agent"
 TIMEOUT=5
+PIDDIR_MODE=755
+PIDDIR_OWNER=
+PIDDIR_OWNER_FALLBACK="root"
 
 # Include newrelic plugin agent defaults if available
 if [ -f /etc/default/$NAME ] ; then
@@ -45,23 +48,31 @@ check_config() {
 
 check_pid() {
   PIDDIR=$(dirname $PIDFILE)
+  if [ ! id -u $PIDDIR_OWNER > /dev/null 2>&1 ]; then
+    PIDDIR_OWNER=$PIDDIR_OWNER_FALLBACK
+  fi
   if [ ! -d $PIDDIR ]; then
-    install -m 777 -o newrelic -g newrelic -d $PIDDIR
+    install -m $PIDDIR_MODE -o $PIDDIR_OWNER -g $PIDDIR_OWNER -d $PIDDIR
     log_action_msg "PID directory was not found and created" || true
   fi;
 }
 
-PIDFILE=$(sed -n -e 's/^[ ]*pidfile[ ]*:[ ]*//p' -e 's/[ ]*$//' $CONFIG)
+if [ -e $CONFIG ]; then
+    PIDFILE=$(sed -n -e 's/^[ ]*pidfile[ ]*:[ ]*//p' -e 's/[ ]*$//' $CONFIG)
+    if [ -z "${PIDDIR_OWNER}" ]; then
+        PIDDIR_OWNER=$(sed -n -e 's/^[ ]*user[ ]*:[ ]*//p' -e 's/[ ]*$//' $CONFIG)
+    fi
+fi
 
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin/:usr/local/sbin:/usr/local/bin"
 
 case "$1" in
   start)
-    log_daemon_msg "Starting $DESC" "$NAME" || true
     check_daemon
     check_config
     check_pid
 
+    log_daemon_msg "Starting $DESC" "$NAME" || true
     if [ -s $PIDFILE ] && kill -0 $(cat $PIDFILE) > /dev/null 2>&1; then
       log_action_msg "apparently already running" || true
       log_end_msg 0 || true
