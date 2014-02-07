@@ -15,7 +15,7 @@ class Memcached(base.SocketStatsPlugin):
     DEFAULT_PORT = 11211
     KEYS = ['curr_connections',
             'curr_items',
-            'connection_struct',
+            'connection_structures',
             'cmd_get',
             'cmd_set',
             'cmd_flush',
@@ -61,7 +61,7 @@ class Memcached(base.SocketStatsPlugin):
         self.add_gauge_value('Connection/Count', '',
                              stats['curr_connections'])
         self.add_gauge_value('Connection/Structures', '',
-                             stats['connection_struct'])
+                             stats['connection_structures'])
         self.add_derive_value('Connection/Yields', '',
                               stats['conn_yields'])
         self.add_derive_value('Evictions', '', stats['evictions'])
