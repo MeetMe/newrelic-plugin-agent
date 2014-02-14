@@ -51,9 +51,9 @@ check_pid() {
   fi;
 }
 
-PIDFILE=$(sed -n -e 's/^[ ]*pidfile[ ]*:[ ]*//p' -e 's/[ ]*$//' $CONFIG)
+PIDFILE=`sed -n -e 's/^[ ]*pidfile[ ]*:[ ]*//p' -e 's/[ ]*$//' $CONFIG`
 
-export PATH="${PATH:+$PATH:}/usr/sbin:/sbin/:usr/local/sbin:/usr/local/bin"
+export PATH="${PATH}:/usr/sbin:/sbin/:usr/local/sbin:/usr/local/bin"
 
 case "$1" in
   start)
@@ -62,7 +62,7 @@ case "$1" in
     check_config
     check_pid
 
-    if [ -s $PIDFILE ] && kill -0 $(cat $PIDFILE) > /dev/null 2>&1; then
+    if [ -s $PIDFILE ] && kill -0 `cat $PIDFILE` > /dev/null 2>&1; then
       log_action_msg "apparently already running" || true
       log_end_msg 0 || true
       exit 0
