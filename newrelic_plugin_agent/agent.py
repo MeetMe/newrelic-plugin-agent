@@ -233,6 +233,8 @@ class NewRelicPluginAgent(helper.Controller):
                          response.content.strip())
         except requests.ConnectionError as error:
             LOGGER.error('Error reporting stats: %s', error)
+        except requests.Timeout as error:
+            LOGGER.error('TimeoutError reporting stats: %s', error)
 
     @staticmethod
     def _get_plugin(plugin_path):
