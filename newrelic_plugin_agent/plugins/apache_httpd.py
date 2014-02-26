@@ -33,7 +33,23 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
             'CPULoad': {'type': 'gauge', 'label': 'CPU Load'},
             'ReqPerSec': {'type': 'gauge', 'label': 'Requests/Velocity',
                           'suffix': 'requests/sec'},
-            'Uptime': {'type': 'gauge', 'label': 'Uptime', 'suffix': 'sec'}}
+            'Uptime': {'type': 'gauge', 'label': 'Uptime', 'suffix': 'sec'},
+            'ConnsTotal': {'type': 'gauge', 'label': 'Connections/Total', 'suffix': 'conns'},
+            'ConnsAsyncWriting': {'type': 'gauge', 'label': 'Connections/AsyncWriting', 'suffix': 'conns'},
+            'ConnsAsyncKeepAlive': {'type': 'gauge', 'label': 'Connections/AsyncKeepAlive', 'suffix': 'conns'},
+            'ConnsAsyncClosing': {'type': 'gauge', 'label': 'Connections/AsyncClosing', 'suffix': 'conns'},
+            '_': {'type': 'gauge', 'label': 'Scoreboard/Waiting For Conn', 'suffix': 'slots'},
+            'S': {'type': 'gauge', 'label': 'Scoreboard/Starting Up', 'suffix': 'slots'},
+            'R': {'type': 'gauge', 'label': 'Scoreboard/Reading Request', 'suffix': 'slots'},
+            'W': {'type': 'gauge', 'label': 'Scoreboard/Sending Reply', 'suffix': 'slots'},
+            'K': {'type': 'gauge', 'label': 'Scoreboard/Keepalive Read', 'suffix': 'slots'},
+            'D': {'type': 'gauge', 'label': 'Scoreboard/DNS Lookup', 'suffix': 'slots'},
+            'C': {'type': 'gauge', 'label': 'Scoreboard/Closing Conn', 'suffix': 'slots'},
+            'L': {'type': 'gauge', 'label': 'Scoreboard/Logging', 'suffix': 'slots'},
+            'G': {'type': 'gauge', 'label': 'Scoreboard/Gracefully Finishing', 'suffix': 'slots'},
+            'I': {'type': 'gauge', 'label': 'Scoreboard/Idle Cleanup', 'suffix': 'slots'},
+            '.': {'type': 'gauge', 'label': 'Scoreboard/Open Slot', 'suffix': 'slots'}}
+
 
     def error_message(self):
             LOGGER.error('Could not match any of the stats, please make ensure '
@@ -41,6 +57,23 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
                          'this as a bug, please include the full output of the '
                          'status page from %s in your ticket', self.stats_url)
 
+    def get_scoreboard(self, data):
+        """Fetch the scoreboard from the stats URL
+
+        :rtype: str
+
+        """
+        keys = ['_', 'S', 'R', 'W', 'K', 'D', 'C', 'L', 'G', 'I', '.']
+        values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        score_out = dict(zip(keys, values))
+
+        for line in data.splitlines():
+            if line.find('Scoreboard') != -1:
+		scoreboard = line.replace('Scoreboard: ','') 
+                for i in range(0, len(scoreboard)):
+                    score_out[scoreboard[i]] += 1
+	return score_out
+	
     def add_datapoints(self, stats):
         """Add all of the data points for a node
 
@@ -70,3 +103,19 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
             else:
                 LOGGER.warning('Found unmapped key/value pair: %s = %s',
                                key, value)
+        
+        score_data = self.get_scoreboard(stats)
+        for key, value in score_data.iteritems():
+            if key in self.KEYS:
+                if self.KEYS[key].get('type') == 'gauge':
+                    self.add_gauge_value(self.KEYS[key]['label'],
+                                         self.KEYS[key].get('suffix', ''),
+                                         value)
+                else:
+                    self.add_derive_value(self.KEYS[key]['label'],
+                                          self.KEYS[key].get('suffix', ''),
+                                          value)
+            else:
+                LOGGER.warning('Found unmapped key/value pair: %s = %s',
+                               key, value)
+

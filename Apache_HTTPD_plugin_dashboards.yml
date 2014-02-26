@@ -1,0 +1,231 @@
+---
+:agent_type: component
+:last_updated_by_id: 66033
+:nav_name: HTTPD
+:pages:
+- :title: Overview
+  :type: EventPage
+  :overview: false
+  :nav_section: end_user
+  :sort_order: 0
+  :last_updated_by_id: 1
+  :items:
+  - :type: Chart
+    :sort_order: 0
+    :title: Requests
+    :subtitle: ''
+    :chart_type: stacked_area
+    :metric: Component/Totals/Requests
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: Chart
+    :sort_order: 1
+    :title: CPU Load
+    :subtitle: ''
+    :chart_type: line
+    :metric: Component/CPU Load
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: Chart
+    :sort_order: 2
+    :title: Busy Workers
+    :subtitle: ''
+    :chart_type: stacked_area
+    :metric: Component/Workers/Busy
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: Chart
+    :sort_order: 3
+    :title: Bytes Sent (kb)
+    :subtitle: ''
+    :chart_type: stacked_area
+    :metric: Component/Totals/Bytes Sent[kb]
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+- :title: Throughput
+  :type: GridPage
+  :overview: false
+  :nav_section: custom_views
+  :sort_order: 1
+  :last_updated_by_id: 1
+  :items:
+  - :type: Chart
+    :sort_order: 0
+    :title: Bytes Per Second
+    :subtitle: ''
+    :chart_type: line
+    :metric: Component/Bytes/Per Second[bytes/sec]
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: Chart
+    :sort_order: 1
+    :title: Total Bytes Sent
+    :subtitle: ''
+    :chart_type: line
+    :metric: Component/Totals/Bytes Sent[kb]
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: Chart
+    :sort_order: 2
+    :title: Requests Average Payload Size (bytes)
+    :subtitle: ''
+    :chart_type: line
+    :metric: Component/Requests/Average Payload Size[bytes]
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: Chart
+    :sort_order: 3
+    :title: Requests Per Second
+    :subtitle: ''
+    :chart_type: line
+    :metric: Component/Requests/Velocity[requests/sec]
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+- :title: Workers
+  :type: GridPage
+  :overview: false
+  :nav_section: custom_views
+  :sort_order: 2
+  :last_updated_by_id: 1
+  :items:
+  - :type: Chart
+    :sort_order: 0
+    :title: Workers Scoreboard
+    :subtitle: ''
+    :chart_type: stacked_area
+    :metric: Component/Scoreboard/*[slots]
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: MetricTable
+    :sort_order: 1
+    :title: ! 'Workers Scoreboard '
+    :subtitle: 
+    :chart_type: 
+    :metric: Component/Scoreboard/*[slots]
+    :value_fn: average_value
+    :value_title: Average over time period
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: Chart
+    :sort_order: 2
+    :title: Workers
+    :subtitle: ''
+    :chart_type: stacked_area
+    :metric: Component/Workers/*
+    :value_fn: average_value
+    :value_title: 
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+  - :type: MetricTable
+    :sort_order: 3
+    :title: Workers
+    :subtitle: 
+    :chart_type: 
+    :metric: Component/Workers/*
+    :value_fn: average_value
+    :value_title: Average over time period
+    :format_fn: smart_round
+    :suffix: 
+    :limit: 
+    :default: false
+    :time_window: 
+    :regex: 
+    :hide_legend: 
+:summary_metrics:
+- :sort_order: 0
+  :metric_name: Component/Workers/Busy
+  :title: Busy Workers
+  :default_caution_threshold: 
+  :default_critical_threshold: 
+  :value_fn: average_value
+- :sort_order: 1
+  :metric_name: Component/Totals/Requests
+  :title: Requests
+  :default_caution_threshold: 
+  :default_critical_threshold: 
+  :value_fn: average_value
+- :sort_order: 2
+  :metric_name: Component/Bytes/Per Second[bytes/sec]
+  :title: Bytes Per Second
+  :default_caution_threshold: 
+  :default_critical_threshold: 
+  :value_fn: average_value
+- :sort_order: 4
+  :metric_name: Component/CPU Load
+  :title: CPU Load
+  :default_caution_threshold: 
+  :default_critical_threshold: 
+  :value_fn: average_value
