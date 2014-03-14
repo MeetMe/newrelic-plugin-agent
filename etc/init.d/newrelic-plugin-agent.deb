@@ -1,7 +1,7 @@
 #! /bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          newrelic_plugin_agent
+# Provides:          newrelic-plugin-agent
 # Required-Start:    $network $local_fs $remote_fs
 # Required-Stop:     $remote_fs
 # Should-Start:      $named
@@ -12,9 +12,9 @@
 # Description:       The New Relic Plugin Agent
 ### END INIT INFO
 
-NAME=newrelic_plugin_agent
-CONFIG=/etc/newrelic/newrelic_plugin_agent.cfg
-DAEMON=/usr/local/bin/newrelic_plugin_agent
+NAME=newrelic-plugin-agent
+CONFIG=/etc/newrelic/newrelic-plugin-agent.cfg
+DAEMON=/usr/local/bin/newrelic-plugin-agent
 DAEMON_OPTS="-c $CONFIG"
 DESC="New Relic Plugin Agent"
 TIMEOUT=5

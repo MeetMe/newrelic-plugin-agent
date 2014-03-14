@@ -1,4 +1,4 @@
-newrelic_plugin_agent
+NewRelic Plugin Agent
 =====================
 
 An agent that polls supported backend systems and submits the results to the
@@ -20,27 +20,6 @@ NewRelic platform. Currently supported backend systems are:
 - Redis
 - Riak
 - uWSGI
-
-IMPORTANT
----------
-Version 1.0.12 has a *SERIOUS* uninstallation bug in the file manifest that will remove all the files on your filesystem if you try and do a ``pip remove newrelic_plugin_agent``.
-
-Version 1.0.13 and greater will attempt to fix the issue when doing a ``pip upgrade`` *BUT* you should also run the script ``fix_nrp_manifest.py`` (or the older ``fix_removal.py``) to clean up the erroneous entries in the installed-files.txt manifest file in your python site-packages directory.
-
-You can run this script manually using using curl and python:
-
-::
-
-    $ curl --insecure https://gist.github.com/gmr/6031454/raw/fix_nrp_manifest.py | python
-
-If you do not see "Fixed a serious uninstallation problem in previous version" in the output, then it did not find a problem, which means more diagnosing is required. Before opening a ticket, you can run the following commands to try and find the problem:
-
-::
-
-    $ ls -al `python -c "from distutils import sysconfig; print sysconfig.get_python_lib()"` |grep newrelic_plugin
-    $ cat  `python -c "from distutils import sysconfig; print sysconfig.get_python_lib()"`/newrelic_plugin_agent-1.0.12-*.egg-info/installed-files.txt
-
-If those do not provide output, you will need to look for your Python site-packages directory. You can manually uninstall ``newrelic_plugin_agent`` if you find the appropriate site packages directory where it was installed and remove the ``newrelic_plugin_agent`` directory and the ``newrelic_plugin_agent-1.0.12-*.egg-info`` directory.
 
 Base Requirements
 -----------------

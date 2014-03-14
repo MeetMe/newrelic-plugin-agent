@@ -1,36 +1,36 @@
 #!/bin/bash
 # chkconfig: 2345 99 60
-# description: newrelic_plugin_agent
-# processname: newrelic_plugin_agent
-# config: /etc/sysconfig/newrelic_plugin_agent
-# pidfile: /var/run/newrelic_plugin_agent.pid
+# description: newrelic-plugin-agent
+# processname: newrelic-plugin-agent
+# config: /etc/sysconfig/newrelic-plugin-agent
+# pidfile: /var/run/newrelic-plugin-agent.pid
 
 # Source function library.
 . /etc/init.d/functions
 
 # Application
-APP="/usr/bin/newrelic_plugin_agent"
+APP="/usr/bin/newrelic-plugin-agent"
 
 # Configuration dir
 CONFIG_DIR="/etc/newrelic"
 
 # PID File
-PID_FILE="/var/run/newrelic/newrelic_plugin_agent.pid"
+PID_FILE="/var/run/newrelic/newrelic-plugin-agent.pid"
 
 # Additional arguments
 OPTS=""
 
-if [ -f /etc/sysconfig/newrelic_plugin_agent ]; then
+if [ -f /etc/sysconfig/newrelic-plugin-agent ]; then
   # Include configuration
-  . /etc/sysconfig/newrelic_plugin_agent
+  . /etc/sysconfig/newrelic-plugin-agent
 fi
 
 # Configuration file
-CONF="${CONF:-${CONFIG_DIR}/newrelic_plugin_agent.cfg}"
+CONF="${CONF:-${CONFIG_DIR}/newrelic-plugin-agent.cfg}"
 
 if [ ! -f "${CONF}" ]; then
-  echo -n $"cannot find newrelic_plugin_agent configuration file: '${CONF}'"
-  failure $"cannot find newrelic_plugin_agent configuration file: '${CONF}'"
+  echo -n $"cannot find newrelic-plugin-agent configuration file: '${CONF}'"
+  failure $"cannot find newrelic-plugin-agent configuration file: '${CONF}'"
   echo
   exit 1
 fi
