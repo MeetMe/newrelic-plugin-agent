@@ -52,21 +52,19 @@ class RabbitMQ(base.Plugin):
 
             base_name = 'Node/%s' % name
             self.add_gauge_value('%s/Channels/Count' % base_name,
-                                 '', count)
-            self.add_gauge_value('%s/Erlang Processes' % base_name,
-                                 '',
+                                 'channels', count)
+            self.add_gauge_value('%s/Erlang Processes' % base_name, 'processes',
                                  node.get('proc_used', 0))
-            self.add_gauge_value('%s/File Descriptors' % base_name,
-                                 '',
+            self.add_gauge_value('%s/File Descriptors' % base_name, 'fds',
                                  node.get('fd_used', 0))
-            self.add_gauge_value('%s/Memory' % base_name, 'mb',
-                                 (node.get('mem_used', 0) / 1024) / 1024)
-            self.add_gauge_value('%s/Sockets' % base_name, '',
+            self.add_gauge_value('%s/Memory' % base_name, 'bytes',
+                                 node.get('mem_used', 0))
+            self.add_gauge_value('%s/Sockets' % base_name, 'sockets',
                                  node.get('sockets_used', 0))
 
         # Summary stats
-        self.add_gauge_value('Summary/Channels', '', channels)
-        self.add_gauge_value('Summary/Consumers', '', self.consumers)
+        self.add_gauge_value('Summary/Channels', 'channels', channels)
+        self.add_gauge_value('Summary/Consumers', 'consumers', self.consumers)
 
     def add_node_channel_datapoints(self, node, channel_data):
         """Add datapoints for a node, creating summary values for top-level
@@ -82,7 +80,7 @@ class RabbitMQ(base.Plugin):
                 if channel.get('client_flow_blocked'):
                     channel_flow_blocked += 1
 
-        self.add_gauge_value('Node/%s/Channels/Blocked' % node, '',
+        self.add_gauge_value('Node/%s/Channels/Blocked' % node, 'channels',
                              channel_flow_blocked)
 
     def add_node_message_datapoints(self, node, queue_data, channel_data):
@@ -136,7 +134,7 @@ class RabbitMQ(base.Plugin):
             elif key == 'redeliver':
                 name = 'Redelivered'
             self.add_derive_value('%s/%s' % (base_name, name),
-                                  '',
+                                  'messages',
                                   total[key])
 
         keys = ['messages_ready', 'messages_unacknowledged']
@@ -146,9 +144,10 @@ class RabbitMQ(base.Plugin):
                 for key in keys:
                     total[key] += queue.get(key, 0)
 
-        self.add_gauge_value('%s/Available' % base_name, '',
+        self.add_gauge_value('%s/Available' % base_name, 'messages',
                              total['messages_ready'])
-        self.add_gauge_value('%s/Pending Acknowledgements' % base_name, '',
+        self.add_gauge_value('%s/Pending Acknowledgements' % base_name,
+                             'messages',
                              total['messages_unacknowledged'])
 
     def add_node_queue_datapoints(self, node, queue_data):
@@ -186,7 +185,7 @@ class RabbitMQ(base.Plugin):
 
         self.consumers += total['consumers']
 
-        self.add_gauge_value('%s/Active' % base_name, 'Consumers',
+        self.add_gauge_value('%s/Active' % base_name, 'consumers',
                              total['active_consumers'],
                              None,
                              None,
@@ -243,25 +242,25 @@ class RabbitMQ(base.Plugin):
                                  queue.get('consumers', 0))
 
             base_name = 'Queue/%s/%s/Messages' % (vhost, queue['name'])
-            self.add_derive_value('%s/Acknowledged' % base_name, '',
+            self.add_derive_value('%s/Acknowledged' % base_name, 'messages',
                                   message_stats.get('ack', 0))
-            self.add_gauge_value('%s/Available' % base_name, '',
+            self.add_gauge_value('%s/Available' % base_name, 'messages',
                                  queue.get('messages_ready', 0))
-            self.add_derive_value('%s/Delivered (All)' % base_name, '',
+            self.add_derive_value('%s/Delivered (All)' % base_name, 'messages',
                                   message_stats.get('deliver_get', 0))
-            self.add_derive_value('%s/Delivered' % base_name, '',
+            self.add_derive_value('%s/Delivered' % base_name, 'messages',
                                   message_stats.get('deliver', 0))
-            self.add_derive_value('%s/Delivered No-Ack' % base_name, '',
+            self.add_derive_value('%s/Delivered No-Ack' % base_name, 'messages',
                                   message_stats.get('deliver_no_ack', 0))
-            self.add_derive_value('%s/Got' % base_name, '',
+            self.add_derive_value('%s/Got' % base_name, 'messages',
                                   message_stats.get('get', 0))
-            self.add_derive_value('%s/Got No-Ack' % base_name, '',
+            self.add_derive_value('%s/Got No-Ack' % base_name, 'messages',
                                   message_stats.get('get_no_ack', 0))
-            self.add_derive_value('%s/Published' % base_name, '',
+            self.add_derive_value('%s/Published' % base_name, 'messages',
                                   message_stats.get('publish', 0))
-            self.add_derive_value('%s/Redelivered' % base_name, '',
+            self.add_derive_value('%s/Redelivered' % base_name, 'messages',
                                   message_stats.get('redeliver', 0))
-            self.add_gauge_value('%s/Unacknowledged' % base_name, '',
+            self.add_gauge_value('%s/Unacknowledged' % base_name, 'messages',
                                  queue.get('messages_unacknowledged', 0))
 
             available += queue.get('messages_ready', 0)
@@ -271,15 +270,15 @@ class RabbitMQ(base.Plugin):
             unacked += queue.get('messages_unacknowledged', 0)
 
         # Summary stats
-        self.add_gauge_value('Summary/Messages/Available', '',
+        self.add_gauge_value('Summary/Messages/Available', 'messages',
                              available, count=count)
-        self.add_derive_value('Summary/Messages/Delivered', '',
+        self.add_derive_value('Summary/Messages/Delivered', 'messages',
                               deliver, count=count)
-        self.add_derive_value('Summary/Messages/Published', '',
+        self.add_derive_value('Summary/Messages/Published', 'messages',
                               publish, count=count)
-        self.add_derive_value('Summary/Messages/Redelivered', '',
+        self.add_derive_value('Summary/Messages/Redelivered', 'messages',
                               redeliver, count=count)
-        self.add_gauge_value('Summary/Messages/Unacknowledged', '',
+        self.add_gauge_value('Summary/Messages/Unacknowledged', 'messages',
                              unacked, count=count)
 
     def http_get(self, url, params=None):

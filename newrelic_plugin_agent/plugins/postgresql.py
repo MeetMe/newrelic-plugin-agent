@@ -86,32 +86,34 @@ class PostgreSQL(base.Plugin):
             self.add_gauge_value('Database/%s/Backends' % database, '',
                                  row.get('numbackends', 0))
             self.add_derive_value('Database/%s/Transactions/Committed' %
-                                  database, '', int(row.get('xact_commit', 0)))
+                                  database, 'transactions',
+                                  int(row.get('xact_commit', 0)))
             self.add_derive_value('Database/%s/Transactions/Rolled Back' %
-                                  database, '',
+                                  database, 'transactions',
                                   int(row.get('xact_rollback', 0)))
             self.add_derive_value('Database/%s/Tuples/Read from Disk ' %
-                                  database, '', int(row.get('blks_read', 0)))
+                                  database, 'tuples',
+                                  int(row.get('blks_read', 0)))
             self.add_derive_value('Database/%s/Tuples/Read cache hit' %
-                                  database, '',
+                                  database, 'tuples',
                                   int(row.get('blks_hit', 0)))
             self.add_derive_value('Database/%s/Tuples/Returned/From Sequential '
-                                  'Scan' % database, '',
+                                  'Scan' % database, 'tuples',
                                   int(row.get('tup_returned', 0)))
             self.add_derive_value('Database/%s/Tuples/Returned/From Bitmap '
-                                  'Scan' % database, '',
+                                  'Scan' % database, 'tuples',
                                   int(row.get('tup_fetched', 0)))
             self.add_derive_value('Database/%s/Tuples/Writes/Inserts' %
-                                  database, '',
+                                  database, 'tuples',
                                   int(row.get('tup_inserted', 0)))
             self.add_derive_value('Database/%s/Tuples/Writes/Updates' %
-                                  database, '',
+                                  database, 'tuples',
                                   int(row.get('tup_updated', 0)))
             self.add_derive_value('Database/%s/Tuples/Writes/Deletes' %
-                                  database, '',
+                                  database, 'tuples',
                                   int(row.get('tup_deleted', 0)))
             self.add_derive_value('Database/%s/Conflicts' %
-                                  database, '',
+                                  database, 'tuples',
                                   int(row.get('conflicts', 0)))
 
     def add_backend_stats(self, cursor):
@@ -120,25 +122,25 @@ class PostgreSQL(base.Plugin):
         else:
             cursor.execute(BACKENDS_9_2)
         temp = cursor.fetchone()
-        self.add_gauge_value('Backends/Active', '',
+        self.add_gauge_value('Backends/Active', 'backends',
                              temp.get('backends_active', 0))
-        self.add_gauge_value('Backends/Idle', '',
+        self.add_gauge_value('Backends/Idle', 'backends',
                              temp.get('backends_idle', 0))
 
     def add_bgwriter_stats(self, cursor):
         cursor.execute(BGWRITER)
         temp = cursor.fetchone()
         self.add_derive_value('Background Writer/Checkpoints/Scheduled',
-                              '',
+                              'checkpoints',
                               temp.get('checkpoints_timed', 0))
         self.add_derive_value('Background Writer/Checkpoints/Requested',
-                              '',
+                              'checkpoints',
                               temp.get('checkpoints_requests', 0))
 
     def add_index_stats(self, cursor):
         cursor.execute(INDEX_COUNT)
         temp = cursor.fetchone()
-        self.add_gauge_value('Objects/Indexes', '',
+        self.add_gauge_value('Objects/Indexes', 'indexes',
                              temp.get('indexes', 0))
         cursor.execute(INDEX_SIZE_ON_DISK)
         temp = cursor.fetchone()
@@ -153,34 +155,35 @@ class PostgreSQL(base.Plugin):
             for row in temp:
                 if row['mode'] == lock:
                     found = True
-                    self.add_gauge_value(LOCK_MAP[lock], '', int(row['count']))
+                    self.add_gauge_value(LOCK_MAP[lock], 'locks',
+                                         int(row['count']))
             if not found:
-                    self.add_gauge_value(LOCK_MAP[lock], '', 0)
+                    self.add_gauge_value(LOCK_MAP[lock], 'locks', 0)
 
     def add_statio_stats(self, cursor):
         cursor.execute(STATIO)
         temp = cursor.fetchone()
-        self.add_derive_value('IO Operations/Heap/Reads', '',
+        self.add_derive_value('IO Operations/Heap/Reads', 'iops',
                               int(temp.get('heap_blocks_read', 0)))
-        self.add_derive_value('IO Operations/Heap/Hits', '',
+        self.add_derive_value('IO Operations/Heap/Hits', 'iops',
                               int(temp.get('heap_blocks_hit', 0)))
-        self.add_derive_value('IO Operations/Index/Reads', '',
+        self.add_derive_value('IO Operations/Index/Reads', 'iops',
                               int(temp.get('index_blocks_read', 0)))
-        self.add_derive_value('IO Operations/Index/Hits', '',
+        self.add_derive_value('IO Operations/Index/Hits', 'iops',
                               int(temp.get('index_blocks_hit', 0)))
-        self.add_derive_value('IO Operations/Toast/Reads', '',
+        self.add_derive_value('IO Operations/Toast/Reads', 'iops',
                               int(temp.get('toast_blocks_read', 0)))
-        self.add_derive_value('IO Operations/Toast/Hits', '',
+        self.add_derive_value('IO Operations/Toast/Hits', 'iops',
                               int(temp.get('toast_blocks_hit', 0)))
-        self.add_derive_value('IO Operations/Toast Index/Reads', '',
+        self.add_derive_value('IO Operations/Toast Index/Reads', 'iops',
                               int(temp.get('toastindex_blocks_read', 0)))
-        self.add_derive_value('IO Operations/Toast Index/Hits', '',
+        self.add_derive_value('IO Operations/Toast Index/Hits', 'iops',
                               int(temp.get('toastindex_blocks_hit', 0)))
 
     def add_table_stats(self, cursor):
         cursor.execute(TABLE_COUNT)
         temp = cursor.fetchone()
-        self.add_gauge_value('Objects/Tables', '',
+        self.add_gauge_value('Objects/Tables', 'tables',
                              temp.get('relations', 0))
         cursor.execute(TABLE_SIZE_ON_DISK)
         temp = cursor.fetchone()
@@ -190,38 +193,38 @@ class PostgreSQL(base.Plugin):
     def add_transaction_stats(self, cursor):
         cursor.execute(TRANSACTIONS)
         temp = cursor.fetchone()
-        self.add_derive_value('Transactions/Committed', '',
+        self.add_derive_value('Transactions/Committed', 'transactions',
                               int(temp.get('transactions_committed', 0)))
-        self.add_derive_value('Transactions/Rolled Back', '',
+        self.add_derive_value('Transactions/Rolled Back', 'transactions',
                               int(temp.get('transactions_rollback', 0)))
 
-        self.add_derive_value('Tuples/Read from Disk', '',
+        self.add_derive_value('Tuples/Read from Disk', 'tuples',
                               int(temp.get('blocks_read', 0)))
-        self.add_derive_value('Tuples/Read cache hit', '',
+        self.add_derive_value('Tuples/Read cache hit', 'tuples',
                               int(temp.get('blocks_hit', 0)))
 
         self.add_derive_value('Tuples/Returned/From Sequential Scan',
-                              '',
+                              'tuples',
                               int(temp.get('tuples_returned', 0)))
         self.add_derive_value('Tuples/Returned/From Bitmap Scan',
-                              '',
+                              'tuples',
                               int(temp.get('tuples_fetched', 0)))
 
-        self.add_derive_value('Tuples/Writes/Inserts', '',
+        self.add_derive_value('Tuples/Writes/Inserts', 'tuples',
                               int(temp.get('tuples_inserted', 0)))
-        self.add_derive_value('Tuples/Writes/Updates', '',
+        self.add_derive_value('Tuples/Writes/Updates', 'tuples',
                               int(temp.get('tuples_updated', 0)))
-        self.add_derive_value('Tuples/Writes/Deletes', '',
+        self.add_derive_value('Tuples/Writes/Deletes', 'tuples',
                               int(temp.get('tuples_deleted', 0)))
 
     def add_wal_stats(self, cursor):
         cursor.execute(ARCHIVE)
         temp = cursor.fetchone()
-        self.add_derive_value('Archive Status/Total', '',
+        self.add_derive_value('Archive Status/Total', 'files',
                               temp.get('file_count', 0))
-        self.add_gauge_value('Archive Status/Ready', '',
+        self.add_gauge_value('Archive Status/Ready', 'files',
                              temp.get('ready_count', 0))
-        self.add_derive_value('Archive Status/Done', '',
+        self.add_derive_value('Archive Status/Done', 'files',
                               temp.get('done_count', 0))
 
 
@@ -239,9 +242,10 @@ class PostgreSQL(base.Plugin):
     def connection_arguments(self):
         """Create connection parameter dictionary for psycopg2.connect
 
-        :return dict: The dictionary to be passed to psycopg2.connect via double-splat
+        :return dict: The dictionary to be passed to psycopg2.connect
+            via double-splat
         """
-        filtered_args = ["name","superuser","relation_stats"]
+        filtered_args = ["name", "superuser", "relation_stats"]
         args = {}
         for key in set(self.config) - set(filtered_args):
             if key == 'dbname':
