@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 class RabbitMQ(base.Plugin):
 
-    GUID = 'com.meetme.newrelic_rabbitmq_agent'
+    GUID = 'com.poisonpenllc.newrelic_rabbitmq_agent'
 
     DEFAULT_USER = 'guest'
     DEFAULT_PASSWORD = 'guest'
@@ -225,6 +225,10 @@ class RabbitMQ(base.Plugin):
         available, consumers, deliver, publish, redeliver, unacked = \
             0, 0, 0, 0, 0, 0
         for count, queue in enumerate(queue_data):
+            if queue['name'][0:6] == 'amq.gen':
+                LOGGER.debug('Skipping auto-named queue: %s', queue['name'])
+                continue
+
             message_stats = queue.get('message_stats', dict())
             if not message_stats:
                 message_stats = self.DUMMY_STATS
