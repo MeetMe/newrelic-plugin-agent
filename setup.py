@@ -61,8 +61,7 @@ data_files[base_path] = ['LICENSE',
                          'etc/init.d/newrelic-plugin-agent.deb',
                          'etc/init.d/newrelic-plugin-agent.rhel',
                          'etc/newrelic/newrelic-plugin-agent.cfg',
-                         'apc-nrp.php',
-                         'fix_nrp_manifest.py']
+                         'apc-nrp.php']
 
 console_scripts = ['newrelic-plugin-agent=newrelic_plugin_agent.agent:main']
 install_requires = ['helper>=2.2.2', 'requests>=2.0.0']
