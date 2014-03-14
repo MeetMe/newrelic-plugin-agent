@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 class CouchDB(base.JSONStatsPlugin):
 
     DEFAULT_PATH = '/_stats'
-    GUID = 'com.meetme.newrelic_couchdb_agent'
+    GUID = 'com.poisonpenllc.newrelic_couchdb_agent'
 
     HTTP_METHODS = ['COPY', 'DELETE', 'GET', 'HEAD', 'POST', 'PUT']
     STATUS_CODES = [200, 201, 202, 301, 304, 400, 401,

@@ -20,7 +20,7 @@ class ElasticSearch(base.JSONStatsPlugin):
     DEFAULT_HOST = 'localhost'
     DEFAULT_PATH = '/_nodes/stats?all'
     DEFAULT_PORT = 9200
-    GUID = 'com.meetme.newrelic_elasticsearch_node_agent'
+    GUID = 'com.poisonpenllc.newrelic_elasticsearch_node_agent'
 
     def add_datapoints(self, stats):
         """Add all of the datapoints for the Elasticsearch poll

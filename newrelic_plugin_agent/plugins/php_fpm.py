@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 class FPM(base.JSONStatsPlugin):
 
-    GUID = 'com.meetme.newrelic_php_fpm_agent'
+    GUID = 'com.poisonpenllc.newrelic_php_fpm_agent'
 
     def add_datapoints(self, stats):
         """Add all of the data points for a fpm-pool

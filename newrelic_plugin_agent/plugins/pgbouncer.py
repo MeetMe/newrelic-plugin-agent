@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 class PgBouncer(postgresql.PostgreSQL):
 
-    GUID = 'com.meetme.newrelic_pgbouncer_agent'
+    GUID = 'com.poisonpenllc.newrelic_pgbouncer_agent'
     MULTIROW = ['POOLS', 'STATS']
 
     def add_pgbouncer_stats(self, stats):

@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Edgecast(base.Plugin):
 
-    GUID = 'com.meetme.newrelic_edgecast_agent'
+    GUID = 'com.poisonpenllc.newrelic_edgecast_agent'
 
     CACHE_FIELDS = {'TCP_EXPIRED_HIT': {'name': 'Expired Items',
                                         'unit': 'hit/sec'},

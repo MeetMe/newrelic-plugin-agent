@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Memcached(base.SocketStatsPlugin):
 
-    GUID = 'com.meetme.newrelic_memcached_agent'
+    GUID = 'com.poisonpenllc.newrelic_memcached_agent'
     DEFAULT_PORT = 11211
     KEYS = ['curr_connections',
             'curr_items',
