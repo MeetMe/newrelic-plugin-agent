@@ -34,14 +34,14 @@ class Nginx(base.HTTPStatsPlugin):
             'writing': 'Connections/Writing',
             'waiting': 'Connections/Waiting'}
 
-    TYPES = {'connections': 'count',
-             'accepts': 'count',
-             'handled': 'count',
-             'requests': 'count',
-             'reading': 'count',
+    TYPES = {'connections': 'connections',
+             'accepts': 'requests',
+             'handled': 'requests',
+             'requests': 'requests',
+             'reading': 'connections',
              'time': 'seconds',
-             'writing': 'count',
-             'waiting': 'count'}
+             'writing': 'connections',
+             'waiting': 'connections'}
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node

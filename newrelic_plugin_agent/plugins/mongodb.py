@@ -24,17 +24,17 @@ class MongoDB(base.Plugin):
 
         """
         base_key = 'Database/%s' % name
-        self.add_gauge_value('%s/Extents' % base_key, '',
+        self.add_gauge_value('%s/Extents' % base_key, 'extents',
                              stats.get('extents', 0))
-        self.add_gauge_value('%s/Size' % base_key, 'mb',
-                             stats.get('dataSize', 0))
-        self.add_gauge_value('%s/File Size' % base_key, 'mb',
-                             stats.get('fileSize', 0))
-        self.add_gauge_value('%s/Objects' % base_key, '',
+        self.add_gauge_value('%s/Size' % base_key, 'bytes',
+                             stats.get('dataSize', 0) / 1048576)
+        self.add_gauge_value('%s/File Size' % base_key, 'bytes',
+                             stats.get('fileSize', 0) / 1048576)
+        self.add_gauge_value('%s/Objects' % base_key, 'objects',
                              stats.get('objects', 0))
-        self.add_gauge_value('%s/Collections' % base_key, '',
+        self.add_gauge_value('%s/Collections' % base_key, 'collections',
                              stats.get('collections', 0))
-        self.add_gauge_value('%s/Index/Count' % base_key, '',
+        self.add_gauge_value('%s/Index/Count' % base_key, 'indexes',
                              stats.get('indexes', 0))
         self.add_gauge_value('%s/Index/Size' % base_key, 'bytes',
                              stats.get('indexSize', 0))
@@ -46,11 +46,15 @@ class MongoDB(base.Plugin):
 
         """
         asserts = stats.get('asserts', dict())
-        self.add_derive_value('Asserts/Regular', '', asserts.get('regular', 0))
-        self.add_derive_value('Asserts/Warning', '', asserts.get('warning', 0))
-        self.add_derive_value('Asserts/Message', '', asserts.get('msg', 0))
-        self.add_derive_value('Asserts/User', '', asserts.get('user', 0))
-        self.add_derive_value('Asserts/Rollovers', '',
+        self.add_derive_value('Asserts/Regular', 'asserts',
+                              asserts.get('regular', 0))
+        self.add_derive_value('Asserts/Warning', 'asserts',
+                              asserts.get('warning', 0))
+        self.add_derive_value('Asserts/Message', 'asserts',
+                              asserts.get('msg', 0))
+        self.add_derive_value('Asserts/User', 'asserts',
+                              asserts.get('user', 0))
+        self.add_derive_value('Asserts/Rollovers', 'asserts',
                               asserts.get('rollovers', 0))
 
         flush = stats.get('backgroundFlushing', dict())
@@ -60,31 +64,34 @@ class MongoDB(base.Plugin):
                                      flush.get('total_ms', 0),
                                      flush.get('last_ms', 0))
         self.add_gauge_value('Seconds since last flush',
-                             'sec',
+                             'seconds',
                              (datetime.datetime.now() -
                               flush.get('last_finished',
                                         datetime.datetime.now())).seconds)
 
         conn = stats.get('connections', dict())
-        self.add_gauge_value('Connections/Available', '',
+        self.add_gauge_value('Connections/Available', 'connections',
                              conn.get('available', 0))
-        self.add_gauge_value('Connections/Current', '', conn.get('current', 0))
+        self.add_gauge_value('Connections/Current', 'connections',
+                             conn.get('current', 0))
 
         cursors = stats.get('cursors', dict())
-        self.add_gauge_value('Cursors/Open', '', cursors.get('totalOpen', 0))
-        self.add_derive_value('Cursors/Timed Out', '', cursors.get('timedOut', 0))
+        self.add_gauge_value('Cursors/Open', 'cursors',
+                             cursors.get('totalOpen', 0))
+        self.add_derive_value('Cursors/Timed Out', 'cursors',
+                              cursors.get('timedOut', 0))
 
         dur = stats.get('dur', dict())
-        self.add_gauge_value('Durability/Commits in Write Lock', '',
+        self.add_gauge_value('Durability/Commits in Write Lock', 'commits',
                              dur.get('commitsInWriteLock', 0))
-        self.add_gauge_value('Durability/Early Commits', '',
+        self.add_gauge_value('Durability/Early Commits', 'commits',
                              dur.get('earlyCommits', 0))
-        self.add_gauge_value('Durability/Journal Commits', '',
+        self.add_gauge_value('Durability/Journal Commits', 'commits',
                              dur.get('commits', 0))
-        self.add_gauge_value('Durability/Journal MB Written', 'mb',
-                             dur.get('journaledMB', 0))
-        self.add_gauge_value('Durability/Data File MB Written', 'mb',
-                             dur.get('writeToDataFilesMB', 0))
+        self.add_gauge_value('Durability/Journal Bytes Written', 'bytes',
+                             dur.get('journaledMB', 0) / 1048576)
+        self.add_gauge_value('Durability/Data File Bytes Written', 'bytes',
+                             dur.get('writeToDataFilesMB', 0) / 1048576)
 
         timems = dur.get('timeMs', dict())
         self.add_gauge_value('Durability/Timings/Duration Measured', 'ms',
@@ -99,54 +106,54 @@ class MongoDB(base.Plugin):
                              timems.get('remapPrivateView', 0))
 
         locks = stats.get('globalLock', dict())
-        self.add_derive_value('Global Locks/Held', 'us',
-                              locks.get('lockTime', 0))
-        self.add_derive_value('Global Locks/Ratio', '',
+        self.add_derive_value('Global Locks/Held', 'ms',
+                              locks.get('lockTime', 0) / 1000)
+        self.add_derive_value('Global Locks/Ratio', 'ratio',
                               locks.get('ratio', 0))
 
         active = locks.get('activeClients', dict())
-        self.add_derive_value('Global Locks/Active Clients/Total', '',
+        self.add_derive_value('Global Locks/Active Clients/Total', 'clients',
                               active.get('total', 0))
-        self.add_derive_value('Global Locks/Active Clients/Readers', '',
+        self.add_derive_value('Global Locks/Active Clients/Readers', 'clients',
                               active.get('readers', 0))
-        self.add_derive_value('Global Locks/Active Clients/Writers', '',
+        self.add_derive_value('Global Locks/Active Clients/Writers', 'clients',
                               active.get('writers', 0))
 
         queue = locks.get('currentQueue', dict())
-        self.add_derive_value('Global Locks/Queue/Total', '',
+        self.add_derive_value('Global Locks/Queue/Total', 'locks',
                               queue.get('total', 0))
-        self.add_derive_value('Global Locks/Queue/Readers', '',
+        self.add_derive_value('Global Locks/Queue/Readers', 'readers',
                               queue.get('readers', 0))
-        self.add_derive_value('Global Locks/Queue/Writers', '',
+        self.add_derive_value('Global Locks/Queue/Writers', 'writers',
                               queue.get('writers', 0))
 
         index = stats.get('indexCounters', dict())
         btree_index = index.get('btree', dict())
-        self.add_derive_value('Index/Accesses', '',
+        self.add_derive_value('Index/Accesses', 'accesses',
                               index.get('accesses', 0) +
                               btree_index.get('accesses', 0))
-        self.add_derive_value('Index/Hits', '',
+        self.add_derive_value('Index/Hits', 'hits',
                               index.get('hits', 0) +
                               btree_index.get('hits', 0))
-        self.add_derive_value('Index/Misses', '',
+        self.add_derive_value('Index/Misses', 'misses',
                               index.get('misses', 0) +
                               btree_index.get('misses', 0))
-        self.add_derive_value('Index/Resets', '',
+        self.add_derive_value('Index/Resets', 'resets',
                               index.get('resets', 0) +
                               btree_index.get('resets', 0))
 
         mem = stats.get('mem', dict())
-        self.add_gauge_value('Memory/Mapped', 'mb',
-                             mem.get('mapped', 0))
-        self.add_gauge_value('Memory/Mapped with Journal', 'mb',
-                             mem.get('mappedWithJournal', 0))
-        self.add_gauge_value('Memory/Resident', 'mb',
-                             mem.get('resident', 0))
-        self.add_gauge_value('Memory/Virtual', 'mb',
-                             mem.get('virtual', 0))
+        self.add_gauge_value('Memory/Mapped', 'bytes',
+                             mem.get('mapped', 0) / 1048576)
+        self.add_gauge_value('Memory/Mapped with Journal', 'bytes',
+                             mem.get('mappedWithJournal', 0) / 1048576)
+        self.add_gauge_value('Memory/Resident', 'bytes',
+                             mem.get('resident', 0) / 1048576)
+        self.add_gauge_value('Memory/Virtual', 'bytes',
+                             mem.get('virtual', 0) / 1048576)
 
         net = stats.get('network', dict())
-        self.add_derive_value('Network/Requests', '',
+        self.add_derive_value('Network/Requests', 'requests',
                               net.get('numRequests', 0))
         self.add_derive_value('Network/Transfer/In', 'bytes',
                               net.get('bytesIn', 0))
@@ -154,17 +161,19 @@ class MongoDB(base.Plugin):
                               net.get('bytesOut', 0))
 
         ops = stats.get('opcounters', dict())
-        self.add_derive_value('Operations/Insert', '', ops.get('insert', 0))
-        self.add_derive_value('Operations/Query', '', ops.get('query', 0))
-        self.add_derive_value('Operations/Update', '', ops.get('update', 0))
-        self.add_derive_value('Operations/Delete', '', ops.get('delete', 0))
-        self.add_derive_value('Operations/Get More', '', ops.get('getmore', 0))
-        self.add_derive_value('Operations/Command', '', ops.get('command', 0))
+        self.add_derive_value('Operations/Insert', 'ops', ops.get('insert', 0))
+        self.add_derive_value('Operations/Query', 'ops', ops.get('query', 0))
+        self.add_derive_value('Operations/Update', 'ops', ops.get('update', 0))
+        self.add_derive_value('Operations/Delete', 'ops', ops.get('delete', 0))
+        self.add_derive_value('Operations/Get More', 'ops',
+                              ops.get('getmore', 0))
+        self.add_derive_value('Operations/Command', 'ops',
+                              ops.get('command', 0))
 
         extra = stats.get('extra_info', dict())
         self.add_gauge_value('System/Heap Usage', 'bytes',
                              extra.get('heap_usage_bytes', 0))
-        self.add_derive_value('System/Page Faults', '',
+        self.add_derive_value('System/Page Faults', 'faults',
                               extra.get('page_faults', 0))
 
     def connect(self):
