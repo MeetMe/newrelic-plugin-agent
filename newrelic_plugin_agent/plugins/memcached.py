@@ -50,28 +50,32 @@ class Memcached(base.SocketStatsPlugin):
 
         """
         self.command_value('CAS', 'cas', stats)
-        self.add_derive_value('Command/Requests/Flush', '', stats['cmd_flush'])
-        self.add_derive_value('Command/Errors/CAS', '', stats['cas_badval'])
+        self.add_derive_value('Command/Requests/Flush', 'flush',
+                              stats['cmd_flush'])
+        self.add_derive_value('Command/Errors/CAS', 'cas errors',
+                              stats['cas_badval'])
         self.command_value('Decr', 'decr', stats)
         self.command_value('Delete', 'delete', stats)
         self.command_value('Get', 'get', stats)
         self.command_value('Incr', 'incr', stats)
         self.add_derive_value('Command/Requests/Set', '', stats['cmd_set'])
 
-        self.add_gauge_value('Connection/Count', '',
+        self.add_gauge_value('Connection/Count', 'connections',
                              stats['curr_connections'])
-        self.add_gauge_value('Connection/Structures', '',
+        self.add_gauge_value('Connection/Structures', 'connection structures',
                              stats['connection_structures'])
-        self.add_derive_value('Connection/Yields', '',
+        self.add_derive_value('Connection/Yields', 'yields',
                               stats['conn_yields'])
-        self.add_derive_value('Evictions', '', stats['evictions'])
-        self.add_gauge_value('Items', '', stats['curr_items'])
+        self.add_derive_value('Evictions', 'items', stats['evictions'])
+        self.add_gauge_value('Items', 'items', stats['curr_items'])
 
         self.add_derive_value('Network/In', 'bytes', stats['bytes_read'])
         self.add_derive_value('Network/Out', 'bytes', stats['bytes_written'])
 
-        self.add_derive_value('System/CPU/System', 'sec', stats['rusage_user'])
-        self.add_derive_value('System/CPU/User', 'sec', stats['rusage_user'])
+        self.add_derive_value('System/CPU/System', 'seconds',
+                              stats['rusage_user'])
+        self.add_derive_value('System/CPU/User', 'seconds',
+                              stats['rusage_user'])
         self.add_gauge_value('System/Memory', 'bytes', stats['bytes'])
 
     def command_value(self, name, prefix, stats):
@@ -87,8 +91,8 @@ class Memcached(base.SocketStatsPlugin):
             ratio = (float(stats['%s_hits' % prefix]) / float(total)) * 100
         else:
             ratio = 0
-        self.add_derive_value('Command/Requests/%s' % name, '', total)
-        self.add_gauge_value('Command/Hit Ratio/%s' % name, '', ratio)
+        self.add_derive_value('Command/Requests/%s' % name, 'requests', total)
+        self.add_gauge_value('Command/Hit Ratio/%s' % name, 'ratio', ratio)
 
     def fetch_data(self, connection):
         """Loop in and read in all the data until we have received it all.
