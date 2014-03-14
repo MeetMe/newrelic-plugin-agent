@@ -21,19 +21,20 @@ class Redis(base.SocketStatsPlugin):
         :param dict stats: all of the nodes
 
         """
-        self.add_gauge_value('Clients/Blocked', '',
+        self.add_gauge_value('Clients/Blocked', 'clients',
                              stats.get('blocked_clients', 0))
-        self.add_gauge_value('Clients/Connected', '',
+        self.add_gauge_value('Clients/Connected', 'clients',
                              stats.get('connected_clients', 0))
-        self.add_gauge_value('Slaves/Connected', '',
+        self.add_gauge_value('Slaves/Connected', 'slaves',
                              stats.get('connected_slaves', 0))
-        self.add_gauge_value('Last master IO sync (lag time)', '',
+        self.add_gauge_value('Last master IO sync (lag time)', 'seconds',
                              stats.get('master_last_io_seconds_ago', 0))
 
         # must happen before saving the new values
         # but only if we have the previous values
-        if 'Keys/Hit' in self.derive_last_interval.keys() and 'Keys/Missed' in self.derive_last_interval.keys():
-            prev_hits   = self.derive_last_interval['Keys/Hit']
+        if ('Keys/Hit' in self.derive_last_interval.keys() and
+                'Keys/Missed' in self.derive_last_interval.keys()):
+            prev_hits = self.derive_last_interval['Keys/Hit']
             prev_misses = self.derive_last_interval['Keys/Missed']
 
             # hits and misses since the last measure
@@ -44,46 +45,45 @@ class Redis(base.SocketStatsPlugin):
             total = hits + misses
 
             if total > 0:
-                self.add_gauge_value('Hits Ratio', '', 100 * hits / total)
+                self.add_gauge_value('Hits Ratio', 'ratio', 100 * hits / total)
 
-        self.add_derive_value('Keys/Evicted', '',
+        self.add_derive_value('Evictions', 'keys',
                               stats.get('evicted_keys', 0))
-        self.add_derive_value('Keys/Expired', '',
+        self.add_derive_value('Expirations', 'keys',
                               stats.get('expired_keys', 0))
-        self.add_derive_value('Keys/Hit', '',
+        self.add_derive_value('Keys Hit', 'keys',
                               stats.get('keyspace_hits', 0))
-        self.add_derive_value('Keys/Missed', '',
+        self.add_derive_value('Keys Missed', 'keys',
                               stats.get('keyspace_misses', 0))
 
-        self.add_derive_value('Commands Processed', '',
+        self.add_derive_value('Commands Processed', 'commands',
                               stats.get('total_commands_processed', 0))
-        self.add_derive_value('Connections', '',
+        self.add_derive_value('Connections', 'connections',
                               stats.get('total_connections_received', 0))
-        self.add_derive_value('Changes Since Last Save', '',
+        self.add_derive_value('Changes Since Last Save', 'changes',
                               stats.get('rdb_changes_since_last_save', 0))
-        self.add_derive_value('Last Save Time', '',
+        self.add_derive_value('Last Save Time', 'seconds',
                               stats.get('rdb_last_bgsave_time_sec', 0))
 
-        self.add_gauge_value('Pubsub/Commands', '',
+        self.add_gauge_value('Pubsub/Commands', 'commands',
                              stats.get('pubsub_commands', 0))
-        self.add_gauge_value('Pubsub/Patterns', '',
+        self.add_gauge_value('Pubsub/Patterns', 'patterns',
                              stats.get('pubsub_patterns', 0))
 
-        self.add_derive_value('CPU/User/Self', 'sec',
+        self.add_derive_value('CPU/User/Self', 'seconds',
                               stats.get('used_cpu_user', 0))
-        self.add_derive_value('CPU/System/Self', 'sec',
+        self.add_derive_value('CPU/System/Self', 'seconds',
                               stats.get('used_cpu_sys', 0))
 
-        self.add_derive_value('CPU/User/Children', 'sec',
+        self.add_derive_value('CPU/User/Children', 'seconds',
                               stats.get('used_cpu_user_childrens', 0))
 
-        self.add_derive_value('CPU/System/Children', 'sec',
+        self.add_derive_value('CPU/System/Children', 'seconds',
                               stats.get('used_cpu_sys_childrens', 0))
 
-        self.add_gauge_value('Memory Use', 'MB',
-                             stats.get('used_memory', 0) / 1048576,
-                             max_val=stats.get('used_memory_peak',
-                                                0) / 1048576)
+        self.add_gauge_value('Memory Use', 'bytes',
+                             stats.get('used_memory', 0),
+                             max_val=stats.get('used_memory_peak', 0 ))
         self.add_gauge_value('Memory Fragmentation', 'ratio',
                              stats.get('mem_fragmentation_ratio', 0))
 
@@ -91,15 +91,15 @@ class Redis(base.SocketStatsPlugin):
         for db in range(0, self.config.get('db_count', 16)):
 
             db_stats = stats.get('db%i' % db, dict())
-            self.add_gauge_value('DB/%s/Expires' % db, '',
+            self.add_gauge_value('DB/%s/Expires' % db, 'keys',
                                 db_stats.get('expires', 0))
-            self.add_gauge_value('DB/%s/Keys' % db, '',
+            self.add_gauge_value('DB/%s/Keys' % db, 'keys',
                                  db_stats.get('keys', 0))
             keys += db_stats.get('keys', 0)
             expires += db_stats.get('expires', 0)
 
-        self.add_gauge_value('Keys/Total', '', keys)
-        self.add_gauge_value('Keys/Will Expire', '', expires)
+        self.add_gauge_value('Keys/Total', 'keys', keys)
+        self.add_gauge_value('Keys/Will Expire', 'keys', expires)
 
     def connect(self):
         """Top level interface to create a socket and connect it to the
