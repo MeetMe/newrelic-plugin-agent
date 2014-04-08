@@ -103,9 +103,9 @@ You can also use a single mapping like follows:
 ::
 
     plugin_name:
-        name: target_name
-        host: localhost
-        foo: bar
+      name: target_name
+      host: localhost
+      foo: bar
 
 The fields for plugin configurations can vary due to a plugin's configuration requirements. The name value in each stanza is only required when using multiple targets in a plugin. If it is only a single target, the name will be taken from the server's hostname.
 
@@ -298,9 +298,9 @@ Configuration Example
             #password: bar
 
       edgecast:
-        - name: My Edgecase Account
-          account: ACCOUNT_NUMBER
-          token: API_TOKEN
+        name: My Edgecase Account
+        account: ACCOUNT_NUMBER
+        token: API_TOKEN
 
       elasticsearch:
         name: clustername
@@ -311,7 +311,7 @@ Configuration Example
         name: my-haproxy-server
         host: localhost
         port: 80
-        path: /haproxy?stats
+        path: /haproxy?stats;csv
         scheme: http
         #verify_ssl_cert: true
         #username: foo
