@@ -28,7 +28,6 @@ class Plugin(object):
         self.derive_values = dict()
         self.derive_last_interval = last_interval_values or dict()
         self.gauge_values = dict()
-        self.rate_values = dict()
 
     def add_datapoints(self, data):
         """Extend this method to process the data points retrieved during the
@@ -80,7 +79,8 @@ class Plugin(object):
 
         """
         if last_value is None:
-            return self.add_derive_value(metric_name, units, total_value, count)
+            return self.add_derive_value(metric_name, units,
+                                         total_value, count)
         self.add_derive_value('%s/Total' % metric_name,
                               units, total_value, count)
         self.add_derive_value('%s/Last' % metric_name,
@@ -116,7 +116,6 @@ class Plugin(object):
         metrics = dict()
         metrics.update(self.derive_values.items())
         metrics.update(self.gauge_values.items())
-        metrics.update(self.rate_values.items())
         return {'name': self.name,
                 'guid': self.GUID,
                 'duration': self.poll_interval,
@@ -133,9 +132,7 @@ class Plugin(object):
         errors.
 
         """
-        if (not self.derive_values and
-            not self.gauge_values and
-            not self.rate_values):
+        if not self.derive_values and not self.gauge_values:
             self.error_message()
         else:
             LOGGER.info('%s poll successful, completed in %.2f seconds',
@@ -147,7 +144,6 @@ class Plugin(object):
         self.poll_start_time = time.time()
         self.derive_values = dict()
         self.gauge_values = dict()
-        self.rate_values = dict()
 
     def initialize_counters(self, keys):
         """Create a new set of counters for the given key list
