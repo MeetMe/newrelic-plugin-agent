@@ -22,7 +22,7 @@ PATTERN = re.compile(r'^Active connections: (?P<connections>\d+)\s+[\w ]+\n'
 class Nginx(base.HTTPStatsPlugin):
 
     DEFAULT_PATH = 'nginx_stub_status'
-    GUID = 'com.poisonpenllc.newrelic_nginx_agent'
+    GUID = 'com.meetme.newrelic_nginx_agent'
 
     GAUGES = ['connections', 'reading', 'writing', 'waiting']
     KEYS = {'connections': 'Totals/Connections',

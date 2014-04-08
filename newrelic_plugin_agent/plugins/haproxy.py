@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 class HAProxy(base.CSVStatsPlugin):
 
     DEFAULT_PATH = 'haproxy?stats;csv'
-    GUID = 'com.poisonpenllc.newrelic_haproxy_agent'
+    GUID = 'com.meetme.newrelic_haproxy_agent'
     UNIT = {'Bytes': {'In': 'bytes', 'Out': 'bytes'}}
 
     def sum_data(self, stats):

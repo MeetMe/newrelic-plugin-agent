@@ -16,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Plugin(object):
 
-    GUID = 'com.poisonpenllc.newrelic_plugin_agent'
+    GUID = 'com.meetme.newrelic_plugin_agent'
     MAX_VAL = 2147483647
 
     def __init__(self, config, poll_interval, last_interval_values=None):

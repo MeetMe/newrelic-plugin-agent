@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 class APC(base.JSONStatsPlugin):
 
-    GUID = 'com.poisonpenllc.newrelic_php_apc_agent'
+    GUID = 'com.meetme.newrelic_php_apc_agent'
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node

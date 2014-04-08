@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Redis(base.SocketStatsPlugin):
 
-    GUID = 'com.poisonpenllc.newrelic_redis_agent'
+    GUID = 'com.meetme.newrelic_redis_agent'
 
     DEFAULT_PORT = 6379
 

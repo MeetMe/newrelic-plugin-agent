@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 class MongoDB(base.Plugin):
 
-    GUID = 'com.poisonpenllc.newrelic_mongodb_plugin_agent'
+    GUID = 'com.meetme.newrelic_mongodb_plugin_agent'
 
     def add_datapoints(self, name, stats):
         """Add all of the data points for a database

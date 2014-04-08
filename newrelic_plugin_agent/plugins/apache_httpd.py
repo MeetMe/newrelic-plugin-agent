@@ -15,7 +15,7 @@ PATTERN = re.compile(r'^([\w\s{1}]+):\s([\d\.{1}]+)', re.M)
 class ApacheHTTPD(base.HTTPStatsPlugin):
 
     DEFAULT_QUERY = 'auto'
-    GUID = 'com.poisonpenllc.newrelic_apache_httpd_agent'
+    GUID = 'com.meetme.newrelic_apache_httpd_agent'
     KEYS = {'Total Accesses': {'type': '',
                                'label': 'Totals/Requests'},
             'BusyWorkers': {'type': 'gauge',

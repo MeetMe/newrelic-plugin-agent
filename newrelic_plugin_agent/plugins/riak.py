@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 class Riak(base.JSONStatsPlugin):
 
     DEFAULT_PATH = '/stats'
-    GUID = 'com.poisonpenllc.newrelic_riak_agent'
+    GUID = 'com.meetme.newrelic_riak_agent'
 
     def add_datapoints(self, stats):
         """Add all of the data points for a node
