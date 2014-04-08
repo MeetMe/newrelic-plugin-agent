@@ -91,7 +91,7 @@ class PostgreSQL(base.Plugin):
             self.add_derive_value('Database/%s/Transactions/Rolled Back' %
                                   database, 'transactions',
                                   int(row.get('xact_rollback', 0)))
-            self.add_derive_value('Database/%s/Tuples/Read from Disk ' %
+            self.add_derive_value('Database/%s/Tuples/Read from Disk' %
                                   database, 'tuples',
                                   int(row.get('blks_read', 0)))
             self.add_derive_value('Database/%s/Tuples/Read cache hit' %
