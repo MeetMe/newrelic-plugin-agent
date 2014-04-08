@@ -13,7 +13,15 @@ class HAProxy(base.CSVStatsPlugin):
 
     DEFAULT_PATH = 'haproxy?stats;csv'
     GUID = 'com.meetme.newrelic_haproxy_agent'
-    UNIT = {'Bytes': {'In': 'bytes', 'Out': 'bytes'}}
+    UNIT = {'Queue': {'Current': 'connections', 'Max': 'connections'},
+            'Sessions': {'Current': 'sessions', 'Max': 'sessions',
+                         'Total': 'sessions'},
+            'Denied': {'Request': 'requests', 'Response': 'responses'},
+            'Errors': {'Request': 'requests', 'Response': 'responses',
+                       'Connections': 'connections'},
+            'Warnings': {'Retry': 'retries', 'Redispatch': 'redispatches'},
+            'Server': {'Downtime': 'ms'},
+            'Bytes': {'In': 'bytes', 'Out': 'bytes'}}
 
     def sum_data(self, stats):
         """Return the summed data as a dict
@@ -62,4 +70,5 @@ class HAProxy(base.CSVStatsPlugin):
                                       self.UNIT.get(section,
                                                     dict()).get(key, ''),
                                       stats[section][key])
-        self.add_gauge_value('Server/Downtime', 'ms', stats['Server']['Downtime'])
+        self.add_gauge_value('Server/Downtime', 'ms',
+                             stats['Server']['Downtime'])

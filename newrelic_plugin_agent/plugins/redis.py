@@ -38,7 +38,7 @@ class Redis(base.SocketStatsPlugin):
             prev_misses = self.derive_last_interval['Keys/Missed']
 
             # hits and misses since the last measure
-            hits   = stats.get('keyspace_hits', 0)   - prev_hits
+            hits = stats.get('keyspace_hits', 0) - prev_hits
             misses = stats.get('keyspace_misses', 0) - prev_misses
 
             # total queries since the last measure

@@ -83,7 +83,7 @@ class PostgreSQL(base.Plugin):
         temp = cursor.fetchall()
         for row in temp:
             database = row['datname']
-            self.add_gauge_value('Database/%s/Backends' % database, '',
+            self.add_gauge_value('Database/%s/Backends' % database, 'processes',
                                  row.get('numbackends', 0))
             self.add_derive_value('Database/%s/Transactions/Committed' %
                                   database, 'transactions',
@@ -122,9 +122,9 @@ class PostgreSQL(base.Plugin):
         else:
             cursor.execute(BACKENDS_9_2)
         temp = cursor.fetchone()
-        self.add_gauge_value('Backends/Active', 'backends',
+        self.add_gauge_value('Backends/Active', 'processes',
                              temp.get('backends_active', 0))
-        self.add_gauge_value('Backends/Idle', 'backends',
+        self.add_gauge_value('Backends/Idle', 'processes',
                              temp.get('backends_idle', 0))
 
     def add_bgwriter_stats(self, cursor):

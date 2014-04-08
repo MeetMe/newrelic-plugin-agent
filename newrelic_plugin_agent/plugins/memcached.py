@@ -52,7 +52,7 @@ class Memcached(base.SocketStatsPlugin):
         self.command_value('CAS', 'cas', stats)
         self.add_derive_value('Command/Requests/Flush', 'flush',
                               stats['cmd_flush'])
-        self.add_derive_value('Command/Errors/CAS', 'cas errors',
+        self.add_derive_value('Command/Errors/CAS', 'errors',
                               stats['cas_badval'])
         self.command_value('Decr', 'decr', stats)
         self.command_value('Delete', 'delete', stats)

@@ -23,13 +23,14 @@ class uWSGI(base.SocketStatsPlugin):
         :param dict stats: all of the nodes
 
         """
-        self.add_gauge_value('Listen Queue Size', '',
+        self.add_gauge_value('Listen Queue Size', 'connections',
                              stats.get('listen_queue', 0))
-        self.add_gauge_value('Listen Queue Errors', '',
+        self.add_gauge_value('Listen Queue Errors', 'errors',
                              stats.get('listen_queue_errors', 0))
         for lock in stats.get('locks', list()):
             lock_name = lock.keys()[0]
-            self.add_gauge_value('Locks/%s' % lock_name, '', lock[lock_name])
+            self.add_gauge_value('Locks/%s' % lock_name, 'locks',
+                                 lock[lock_name])
 
         exceptions = 0
         harakiris = 0
@@ -50,15 +51,15 @@ class uWSGI(base.SocketStatsPlugin):
             signals += worker.get('signals', 0)
 
             # Add the per worker
-            self.add_derive_value('Worker/%s/Exceptions' % id, '',
+            self.add_derive_value('Worker/%s/Exceptions' % id, 'exceptions',
                                   worker.get('exceptions', 0))
-            self.add_derive_value('Worker/%s/Harakiri' % id, '',
+            self.add_derive_value('Worker/%s/Harakiri' % id, 'harakiris',
                                   worker.get('harakiri_count', 0))
-            self.add_derive_value('Worker/%s/Requests' % id, '',
+            self.add_derive_value('Worker/%s/Requests' % id, 'requests',
                                   worker.get('requests', 0))
-            self.add_derive_value('Worker/%s/Respawns' % id, '',
+            self.add_derive_value('Worker/%s/Respawns' % id, 'respawns',
                                   worker.get('respawn_count', 0))
-            self.add_derive_value('Worker/%s/Signals' % id, '',
+            self.add_derive_value('Worker/%s/Signals' % id, 'signals',
                                   worker.get('signals', 0))
 
             for app in worker['apps']:
@@ -69,18 +70,19 @@ class uWSGI(base.SocketStatsPlugin):
                 apps[app['id']]['requests'] += app['requests']
 
         for app in apps:
-            self.add_derive_value('Application/%s/Exceptions' % app, '',
+            self.add_derive_value('Application/%s/Exceptions' % app,
+                                  'exceptions',
                                   apps[app].get('exceptions', 0))
-            self.add_derive_value('Application/%s/Requests' % app, '',
+            self.add_derive_value('Application/%s/Requests' % app, 'requests',
                                   apps[app].get('requests', 0))
 
-        self.add_derive_value('Summary/Applications', '', len(apps))
-        self.add_derive_value('Summary/Exceptions', '', exceptions)
-        self.add_derive_value('Summary/Harakiris', '', harakiris)
-        self.add_derive_value('Summary/Requests', '', requests)
-        self.add_derive_value('Summary/Respawns', '', respawns)
-        self.add_derive_value('Summary/Signals', '', signals)
-        self.add_derive_value('Summary/Workers', '',
+        self.add_derive_value('Summary/Applications', 'applications', len(apps))
+        self.add_derive_value('Summary/Exceptions', 'exceptions', exceptions)
+        self.add_derive_value('Summary/Harakiris', 'harakiris', harakiris)
+        self.add_derive_value('Summary/Requests', 'requests', requests)
+        self.add_derive_value('Summary/Respawns', 'respawns', respawns)
+        self.add_derive_value('Summary/Signals', 'signals', signals)
+        self.add_derive_value('Summary/Workers', 'workers',
                               len(stats.get('workers', ())))
 
     def fetch_data(self, connection):
