@@ -103,7 +103,7 @@ class Redis(base.SocketStatsPlugin):
 
     def connect(self):
         """Top level interface to create a socket and connect it to the
-        memcached daemon.
+        redis daemon.
 
         :rtype: socket
 
