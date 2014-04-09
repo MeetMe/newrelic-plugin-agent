@@ -122,7 +122,7 @@ Enable the HTTPd server status page in the default virtual host. The following e
         SetHandler server-status
         Order deny,allow
         Deny from all
-        Allow from all
+        Allow from 127.0.0.1
     </Location>
 
 For HTTPd 2.4, it should look something like:
@@ -200,6 +200,8 @@ Enable the Nginx ``stub_status`` setting on the default site in your configurati
 
       location /nginx_stub_status {
         stub_status on;
+        allow 127.0.0.1;
+        deny all;
       }
 
 If you are monitoring Nginx via a HTTPS connection you can use the ``verify_ssl_cert`` configuration value in the httpd configuration section to disable SSL certificate verification.
