@@ -54,7 +54,7 @@ else:
     print 'Did not find the installed-files.txt manifest uninstallation issue'
 
 
-base_path = '%s/opt/newrelic_plugin_agent' % os.getenv('VIRTUAL_ENV', '')
+base_path = '%s/opt/newrelic-plugin-agent' % os.getenv('VIRTUAL_ENV', '')
 data_files = dict()
 data_files[base_path] = ['LICENSE',
                          'README.rst',
