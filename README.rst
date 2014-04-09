@@ -7,7 +7,6 @@ NewRelic platform. Currently supported backend systems are:
 - Alternative PHP Cache
 - Apache HTTP Server
 - CouchDB
-- Edgecast CDN "Realtime" API
 - Elasticsearch
 - HAProxy
 - Memcached
@@ -296,11 +295,6 @@ Configuration Example
             #verify_ssl_cert: true
             #username: foo
             #password: bar
-
-      edgecast:
-        name: My Edgecase Account
-        account: ACCOUNT_NUMBER
-        token: API_TOKEN
 
       elasticsearch:
         name: clustername
