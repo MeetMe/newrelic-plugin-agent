@@ -109,7 +109,7 @@ class Redis(base.SocketStatsPlugin):
 
         """
         connection = super(Redis, self).connect()
-        if self.config.get('password'):
+        if connection and self.config.get('password'):
             connection.send("*2\r\n$4\r\nAUTH\r\n$%i\r\n%s\r\n" %
                             (len(self.config['password']),
                              self.config['password']))
