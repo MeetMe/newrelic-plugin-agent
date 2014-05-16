@@ -1,0 +1,2 @@
+#!/bin/bash
+export NEWRELIC_KEY=$1
