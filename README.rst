@@ -38,7 +38,7 @@ Installation Instructions
 
 * See ``pip`` installation instructions at http://www.pip-installer.org/en/latest/installing.html
 
-2. Copy the configuration file example from ``/opt/newrelic_plugin_agent/newrelic_plugin_agent.cfg`` to ``/etc/newrelic/newrelic_plugin_agent.cfg`` and edit the configuration in that file.
+2. Copy the configuration file example from ``/opt/newrelic-plugin-agent/newrelic-plugin-agent.cfg`` to ``/etc/newrelic/newrelic-plugin-agent.cfg`` and edit the configuration in that file.
 
 3. Make a ``/var/log/newrelic`` directory and make sure it is writable by the user specified in the configuration file
 
@@ -48,11 +48,11 @@ Installation Instructions
 
 ::
 
-    $ newrelic_plugin_agent -c PATH-TO-CONF-FILE [-f]
+    $ newrelic-plugin-agent -c PATH-TO-CONF-FILE [-f]
 
 Where ``-f`` is to run it in the foreground instead of as a daemon.
 
-Sample configuration and init.d scripts are installed to ``/opt/newrelic_plugin_agent`` in addition to a PHP script required for APC monitoring.
+Sample configuration and init.d scripts are installed to ``/opt/newrelic-plugin-agent`` in addition to a PHP script required for APC monitoring.
 
 Installing Additional Requirements
 ----------------------------------
@@ -62,15 +62,15 @@ this, make sure you have the latest version of ``pip`` installed (http://www.pip
 
 ::
 
-    $ pip install newrelic_plugin_agent[mongodb]
+    $ pip install newrelic-plugin-agent[mongodb]
 
 or::
 
-    $ pip install newrelic_plugin_agent[pgbouncer]
+    $ pip install newrelic-plugin-agent[pgbouncer]
 
 or::
 
-    $ pip install newrelic_plugin_agent[postgresql]
+    $ pip install newrelic-plugin-agent[postgresql]
 
 If this does not work for you, make sure you are running a recent copy of ``pip`` (>= 1.3).
 
@@ -110,7 +110,7 @@ The fields for plugin configurations can vary due to a plugin's configuration re
 
 APC Installation Notes
 ----------------------
-Copy the ``apc-nrp.php`` script to a directory that can be served by your web server or ``php-fpm`` application. Edit the ``newrelic_plugin_agent`` configuration to point to the appropriate URL.
+Copy the ``apc-nrp.php`` script to a directory that can be served by your web server or ``php-fpm`` application. Edit the ``newrelic-plugin-agent`` configuration to point to the appropriate URL.
 
 Apache HTTPd Installation Notes
 -------------------------------
@@ -409,7 +409,7 @@ Configuration Example
 
     Daemon:
       user: newrelic
-      pidfile: /var/run/newrelic/newrelic_plugin_agent.pid
+      pidfile: /var/run/newrelic/newrelic-plugin-agent.pid
 
     Logging:
       formatters:
@@ -419,11 +419,11 @@ Configuration Example
         file:
           class : logging.handlers.RotatingFileHandler
           formatter: verbose
-          filename: /var/log/newrelic/newrelic_plugin_agent.log
+          filename: /var/log/newrelic/newrelic-plugin-agent.log
           maxBytes: 10485760
           backupCount: 3
       loggers:
-        newrelic_plugin_agent:
+        newrelic-plugin-agent:
           level: INFO
           propagate: True
           handlers: [console, file]
@@ -434,14 +434,14 @@ Configuration Example
 
 Troubleshooting
 ---------------
-- If the installation does not install the ``newrelic_plugin_agent`` application in ``/usr/bin`` then it is likely that ``setuptools`` or ``distribute`` is not up to date. The following commands can be run to install ``distribute`` and ``pip`` for installing the application:
+- If the installation does not install the ``newrelic-plugin-agent`` application in ``/usr/bin`` then it is likely that ``setuptools`` or ``distribute`` is not up to date. The following commands can be run to install ``distribute`` and ``pip`` for installing the application:
 
 ::
 
     $ curl http://python-distribute.org/distribute_setup.py | python
     $ curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
 
-- If the application installs but doesn't seem to be submitting status, check the logfile which at ``/tmp/newrelic_plugin_agent.log`` if the default example logging configuration is used.
+- If the application installs but doesn't seem to be submitting status, check the logfile which at ``/tmp/newrelic-plugin-agent.log`` if the default example logging configuration is used.
 - If the agent starts but dies shortly after ensure that ``/var/log/newrelic`` and ``/var/run/newrelic`` are writable by the same user specified in the daemon section of the configuration file.
 - If the agent has died and won't restart, remove any files found in ``/var/run/newrelic/``
 - If using the Apache HTTP plugin and your stats are blank, ensure the ExtendedStatus directive is on.
