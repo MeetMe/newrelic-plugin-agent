@@ -11,9 +11,9 @@ RUN echo "mysql-server mysql-server/root_password_again password root" | debconf
 RUN apt-get update && apt-get install -y apache2 php5 php5-apcu memcached mysql-server
 
 RUN mkdir -p /etc/service/apache2 /etc/service/memcached /etc/service/mysqld
-ADD apache2.sh /etc/service/apache2/apache2
-ADD memcached.sh /etc/service/memcached/memcached
-ADD mysqld.sh /etc/service/mysqld/mysqld
+ADD apache2.sh /etc/service/apache2/run
+ADD memcached.sh /etc/service/memcached/run
+ADD mysqld.sh /etc/service/mysqld/run
 
 ADD newrelic-plugin-agent.cfg /etc/newrelic/newrelic-plugin-agent.cfg
 
