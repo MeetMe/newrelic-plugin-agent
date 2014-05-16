@@ -36,7 +36,7 @@ coreos:
 
           [Service]
           Restart=no
-          ExecStart=mkdir -p /home/core/bin; rm /home/core/.bashrc; echo "export PATH=/home/core/bin:$PATH" > /home/core/.bashrc; cp /mnt/source/docker/scripts/* /home/core/bin; chmod u+x /home/core/bin/*
+          ExecStart=/mnt/source/docker/scripts/copy-scripts.sh
 
       - name: sshkeys.service
         command: start
@@ -47,4 +47,4 @@ coreos:
 
           [Service]
           Restart=no
-          ExecStart=cp /mnt/source/docker/base/id_rsa* /home/core/.ssh/; chmod 0700 /mnt/source/docker/base/id_rsa; chmod 0644 /mnt/source/docker/base/id_rsa.pub
+          ExecStart=/mnt/source/docker/scripts/setup-ssh.sh
