@@ -9,7 +9,7 @@ MAINTAINER gavinmroy@gmail.com
 ENV DEBIAN_FRONTEND noninteractive
 
 # Update apt caches and install python dev environment, pip and curl
-RUN apt-get -q update && apt-get install -y -q python-dev python-pip curl
+RUN apt-get -q update && apt-get install -y -q python-dev python-pip curl screen
 
 # Make sure the base development requirements are installed
 RUN pip install helper requests
@@ -36,9 +36,10 @@ RUN /usr/sbin/groupadd -r -g 110 newrelic
 RUN /usr/sbin/useradd -M -r -u 110 -g newrelic newrelic -d /var/lib/postgres
 
 # Setup the newrelic-plugin-agent defaults
-RUN mkdir -p /etc/newrelic /var/log/newrelic /var/run/newrelic
+RUN mkdir -p /etc/newrelic /var/log/newrelic /var/run/newrelic /etc/service/newrelic-plugin-agent
 RUN chown newrelic /var/log/newrelic /var/run/newrelic
 ADD newrelic-plugin-agent.cfg /etc/newrelic/newrelic-plugin-agent.cfg
+ADD newrelic-plugin-agent.sh /etc/service/newrelic-plugin-agent/run
 
 # Set the HOME environment variable for normal login behavior
 ENV HOME /root
