@@ -6,7 +6,8 @@ if env | grep -q "DOCKER_RIAK_DEBUG"; then
   set -x
 fi
 
-DOCKER_RIAK_CLUSTER_SIZE=${DOCKER_RIAK_CLUSTER_SIZE:-5}
+RIAK_CLUSTER_SIZE=${DOCKER_RIAK_CLUSTER_SIZE:-5}
+RIAK_AUTOMATIC_CLUSTERING=${DOCKER_RIAK_AUTOMATIC_CLUSTERING:-1}
 
 if docker ps -a | grep "nrpa/riak" >/dev/null; then
   echo ""
@@ -24,25 +25,37 @@ echo
 echo "Bringing up cluster nodes:"
 echo
 
-for index in $(seq -f "%02g" "1" "${DOCKER_RIAK_CLUSTER_SIZE}");
+for index in $(seq -f "%02g" "1" "${RIAK_CLUSTER_SIZE}");
 do
   if [ "${index}" -gt "1" ] ; then
-    docker run -e "DOCKER_RIAK_CLUSTER_SIZE=${DOCKER_RIAK_CLUSTER_SIZE}" \
-               -e "DOCKER_RIAK_AUTOMATIC_CLUSTERING=${DOCKER_RIAK_AUTOMATIC_CLUSTERING}" \
-               -e NEWRELIC_KEY=$NEWRELIC_KEY \
-               -e NODE_name="riak${index}" \
-               -P --name "riak${index}" \
-               --link "riak01" \
+    docker run -e DOCKER_RIAK_CLUSTER_SIZE=${RIAK_CLUSTER_SIZE} \
+               -e DOCKER_RIAK_AUTOMATIC_CLUSTERING=${RIAK_AUTOMATIC_CLUSTERING} \
+               -e NEWRELIC_KEY=${NEWRELIC_KEY} \
+               -h riak${index} \
+               -P \
+               --name riak${index} \
+               --link riak01 \
                --volumes-from SOURCE \
                -d nrpa/riak > /dev/null 2>&1
   else
-    docker run -e "DOCKER_RIAK_CLUSTER_SIZE=${DOCKER_RIAK_CLUSTER_SIZE}" \
-               -e "DOCKER_RIAK_AUTOMATIC_CLUSTERING=${DOCKER_RIAK_AUTOMATIC_CLUSTERING}" \
-               -e NEWRELIC_KEY=$NEWRELIC_KEY \
-               -e NODE_name="riak${index}" \
+    docker run -e DOCKER_RIAK_CLUSTER_SIZE=${RIAK_CLUSTER_SIZE} \
+               -e DOCKER_RIAK_AUTOMATIC_CLUSTERING=${RIAK_AUTOMATIC_CLUSTERING} \
+               -e NEWRELIC_KEY=${NEWRELIC_KEY} \
+               -h riak${index} \
+               -P \
+               --name riak${index} \
                --volumes-from SOURCE \
-               -P --name "riak${index}" \
-               -d nrpa/riak > /dev/null 2>&1
+               -d nrpa/riak
+
+    echo "docker run -e DOCKER_RIAK_CLUSTER_SIZE=${RIAK_CLUSTER_SIZE} \
+               -e DOCKER_RIAK_AUTOMATIC_CLUSTERING=${RIAK_AUTOMATIC_CLUSTERING} \
+               -e NEWRELIC_KEY=${NEWRELIC_KEY} \
+               -h riak${index} \
+               -P \
+               --name riak${index} \
+               --volumes-from SOURCE \
+               -d nrpa/riak"
+               #> /dev/null 2>&1
   fi
 
   CONTAINER_ID=$(docker ps | egrep "riak${index}[^/]" | cut -d" " -f1)
