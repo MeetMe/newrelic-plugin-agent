@@ -21,7 +21,7 @@ extras_require = {'mongodb': ['pymongo'],
 if sys.version_info < (2, 7, 0):
     install_requires.append('importlib')
 
-setup(name='newrelic-plugin-agent',
+setup(name='newrelic_plugin_agent',
       version='1.3.0',
       description='Python based agent for collecting metrics for NewRelic',
       url='https://github.com/gmr/newrelic-plugin-agent',
