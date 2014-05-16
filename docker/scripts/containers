@@ -1,11 +1,14 @@
 #!/bin/bash
+
 IFS=$'\n';
 echo
 echo "Container Name                 IP Address"
 echo "-----------------------------------------------"
 for CONTAINER in `docker ps | awk '{print $(NF)}' | tail -n+2`
 do
-  IP=`docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${CONTAINER}`
-  echo "$CONTAINER $IP" | awk '{printf "%-30s %-20s\n", $1, $2}'
+  IFS=,
+  C=($CONTAINER)
+  IP=`docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${C}`
+  echo "$C $IP" | awk '{printf "%-30s %-20s\n", $1, $2}'
 done
 echo
