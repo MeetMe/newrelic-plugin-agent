@@ -4,6 +4,7 @@ uWSGI
 """
 import json
 import logging
+import re
 
 from newrelic_plugin_agent.plugins import base
 
@@ -94,6 +95,7 @@ class uWSGI(base.SocketStatsPlugin):
         """
         data = super(uWSGI, self).fetch_data(connection, read_till_empty=True)
         if data:
+            data = re.sub(r'"HTTP_COOKIE=[^"]*"', '""', data)
             return json.loads(data)
         return {}
 

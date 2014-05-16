@@ -19,6 +19,7 @@ class APC(base.JSONStatsPlugin):
         :param dict stats: The stats content from APC as a string
 
         """
+        #APC Shared Memory Stats
         shared_memory = stats.get('shared_memory', dict())
         self.add_gauge_value('Shared Memory/Available', 'Bytes',
                              shared_memory.get('avail_mem', 0))
@@ -27,6 +28,32 @@ class APC(base.JSONStatsPlugin):
         self.add_gauge_value('Shared Memory/Segment Count', '',
                              shared_memory.get('num_seg', 0))
 
+        #APC System Stats
+                system_stats = stats.get('system_stats', dict())
+        self.add_gauge_value('System Cache/Slots', '',
+                             system_stats.get('num_slots', 0))
+        self.add_gauge_value('System Cache/Entries', '',
+                             system_stats.get('num_entries', 0))
+        self.add_gauge_value('System Cache/Size', 'Bytes',
+                             system_stats.get('mem_size', 0))
+        self.add_gauge_value('System Cache/Expunges', '',
+                             system_stats.get('expunges', 0))
+
+        hits = system_stats.get('num_hits', 0)
+        misses = system_stats.get('num_misses', 0)
+        total = hits + misses
+        if total > 0:
+            effectiveness = float(float(hits) / float(total)) * 100
+        else:
+            effectiveness = 0
+        self.add_gauge_value('System Cache/Effectiveness', '%', effectiveness)
+
+        self.add_derive_value('System Cache/Hits', '', hits)
+        self.add_derive_value('System Cache/Misses', '', misses)
+        self.add_derive_value('System Cache/Inserts', '',
+                              system_stats.get('num_inserts', 0))
+
+        #APC User Stats
         user_stats = stats.get('user_stats', dict())
         self.add_gauge_value('User Cache/Slots', '',
                              user_stats.get('num_slots', 0))
