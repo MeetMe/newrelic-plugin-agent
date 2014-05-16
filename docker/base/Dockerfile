@@ -39,7 +39,7 @@ RUN /usr/sbin/useradd -M -r -u 110 -g newrelic newrelic -d /var/lib/postgres
 RUN mkdir -p /etc/newrelic /var/log/newrelic /var/run/newrelic /etc/service/newrelic-plugin-agent
 RUN chown newrelic /var/log/newrelic /var/run/newrelic
 ADD newrelic-plugin-agent.cfg /etc/newrelic/newrelic-plugin-agent.cfg
-ADD newrelic-plugin-agent.sh /etc/service/newrelic-plugin-agent/run
+ADD bin/newrelic-plugin-agent.sh /etc/service/newrelic-plugin-agent/run
 
 # Set the HOME environment variable for normal login behavior
 ENV HOME /root
