@@ -22,21 +22,25 @@ if docker ps -a | grep "nrpa/riak" >/dev/null; then
 fi
 
 echo
-echo "Bringing up cluster nodes:"
+echo "Bringing up ${RIAK_CLUSTER_SIZE} cluster nodes:"
 echo
 
 for index in $(seq -f "%02g" "1" "${RIAK_CLUSTER_SIZE}");
 do
+  echo "  Starting [riak${index}]"
+
   if [ "${index}" -gt "1" ] ; then
+
     docker run -e DOCKER_RIAK_CLUSTER_SIZE=${RIAK_CLUSTER_SIZE} \
                -e DOCKER_RIAK_AUTOMATIC_CLUSTERING=${RIAK_AUTOMATIC_CLUSTERING} \
                -e NEWRELIC_KEY=${NEWRELIC_KEY} \
                -h riak${index} \
                -P \
+               --link=riak01:8098 \
                --name riak${index} \
-               --link riak01 \
                --volumes-from SOURCE \
                -d nrpa/riak > /dev/null 2>&1
+
   else
     docker run -e DOCKER_RIAK_CLUSTER_SIZE=${RIAK_CLUSTER_SIZE} \
                -e DOCKER_RIAK_AUTOMATIC_CLUSTERING=${RIAK_AUTOMATIC_CLUSTERING} \
@@ -45,17 +49,7 @@ do
                -P \
                --name riak${index} \
                --volumes-from SOURCE \
-               -d nrpa/riak
-
-    echo "docker run -e DOCKER_RIAK_CLUSTER_SIZE=${RIAK_CLUSTER_SIZE} \
-               -e DOCKER_RIAK_AUTOMATIC_CLUSTERING=${RIAK_AUTOMATIC_CLUSTERING} \
-               -e NEWRELIC_KEY=${NEWRELIC_KEY} \
-               -h riak${index} \
-               -P \
-               --name riak${index} \
-               --volumes-from SOURCE \
-               -d nrpa/riak"
-               #> /dev/null 2>&1
+               -d nrpa/riak > /dev/null 2>&1
   fi
 
   CONTAINER_ID=$(docker ps | egrep "riak${index}[^/]" | cut -d" " -f1)
@@ -63,10 +57,10 @@ do
 
   until curl -s "http://127.0.0.1:${CONTAINER_PORT}/ping" | grep "OK" > /dev/null 2>&1;
   do
-    sleep 3
+    sleep 1
   done
 
-  echo "  Successfully brought up [riak${index}]"
+  echo "  Started  [riak${index}]"
 done
 
 echo
