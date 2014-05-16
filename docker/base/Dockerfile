@@ -25,13 +25,11 @@ ADD policy-rc.d /usr/sbin/policy-rc.d
 RUN /bin/chmod 755 /usr/sbin/policy-rc.d
 
 # Add the root .ssh files
-RUN mkdir -p /root/.ssh
-RUN chmod 0700 /root/.ssh
+RUN mkdir -p /root/.ssh & chmod 0700 /root/.ssh
 ADD id_rsa /root/.ssh/id_rsa
 ADD id_rsa.pub /root/.ssh/id_rsa.pub
-ADD id_rsa.pub /root/.ssh/authorized_keys
-RUN chmod 0600 /root/.ssh/id_rsa /root/.ssh/authorized_keys
-RUN chmod 0644 /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+ADD ssh_config /root/.ssh/config
+RUN chmod 0700 /root/.ssh/id_rsa && cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 
 # Add a newrelic user
 RUN /usr/sbin/groupadd -r -g 110 newrelic
@@ -45,3 +43,6 @@ ADD newrelic-plugin-agent.sh /etc/service/newrelic-plugin-agent/run
 
 # Set the HOME environment variable for normal login behavior
 ENV HOME /root
+
+# Base Image Init
+CMD ["/sbin/my_init"]
