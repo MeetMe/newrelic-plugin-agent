@@ -17,9 +17,11 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
     DEFAULT_QUERY = 'auto'
     GUID = 'com.meetme.newrelic_apache_httpd_agent'
     KEYS = {'Total Accesses': {'type': '',
-                               'label': 'Totals/Requests'},
+                               'label': 'Totals/Requests',
+                               'suffix': 'requests'},
             'BusyWorkers': {'type': 'gauge',
-                            'label': 'Workers/Busy'},
+                            'label': 'Workers/Busy',
+                            'suffix': 'workers'},
             'Total kBytes': {'type': '',
                              'label': 'Totals/Bytes Sent',
                              'suffix': 'kb'},
@@ -29,8 +31,10 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
             'BytesPerReq': {'type': 'gauge',
                             'label': 'Requests/Average Payload Size',
                             'suffix': 'bytes'},
-            'IdleWorkers': {'type': 'gauge', 'label': 'Workers/Idle'},
-            'CPULoad': {'type': 'gauge', 'label': 'CPU Load'},
+            'IdleWorkers': {'type': 'gauge', 'label': 'Workers/Idle',
+                            'suffix': 'workers'},
+            'CPULoad': {'type': 'gauge', 'label': 'CPU Load',
+                        'suffix': 'processes'},
             'ReqPerSec': {'type': 'gauge', 'label': 'Requests/Velocity',
                           'suffix': 'requests/sec'},
             'Uptime': {'type': 'gauge', 'label': 'Uptime', 'suffix': 'sec'},
@@ -50,12 +54,11 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
             'I': {'type': 'gauge', 'label': 'Scoreboard/Idle Cleanup', 'suffix': 'slots'},
             '.': {'type': 'gauge', 'label': 'Scoreboard/Open Slot', 'suffix': 'slots'}}
 
-
     def error_message(self):
-            LOGGER.error('Could not match any of the stats, please make ensure '
-                         'Apache HTTPd is configured correctly. If you report '
-                         'this as a bug, please include the full output of the '
-                         'status page from %s in your ticket', self.stats_url)
+        LOGGER.error('Could not match any of the stats, please make ensure '
+                     'Apache HTTPd is configured correctly. If you report '
+                     'this as a bug, please include the full output of the '
+                     'status page from %s in your ticket', self.stats_url)
 
     def get_scoreboard(self, data):
         """Fetch the scoreboard from the stats URL
@@ -101,8 +104,8 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
                                           self.KEYS[key].get('suffix', ''),
                                           value)
             else:
-                LOGGER.warning('Found unmapped key/value pair: %s = %s',
-                               key, value)
+                LOGGER.debug('Found unmapped key/value pair: %s = %s',
+                             key, value)
         
         score_data = self.get_scoreboard(stats)
         for key, value in score_data.iteritems():
@@ -116,6 +119,6 @@ class ApacheHTTPD(base.HTTPStatsPlugin):
                                           self.KEYS[key].get('suffix', ''),
                                           value)
             else:
-                LOGGER.warning('Found unmapped key/value pair: %s = %s',
-                               key, value)
+                LOGGER.debug('Found unmapped key/value pair: %s = %s',
+                             key, value)
 
