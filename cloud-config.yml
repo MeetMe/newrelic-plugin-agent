@@ -1,0 +1,50 @@
+#cloud-config
+coreos:
+    units:
+
+      - name: stop-reboot-manager.service
+        content: |
+          [Unit]
+          Description=stop update-engine-reboot-manager
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/systemctl stop update-engine-reboot-manager.service
+          ExecStartPost=/usr/bin/systemctl mask update-engine-reboot-manager.service
+
+          [Install]
+          WantedBy=multi-user.target
+
+      - name: source.service
+        command: start
+        content: |
+          [Unit]
+          Description=Shared source directory from Vagrant
+          Requires=docker.service
+          Requires=mnt-source.mount
+
+          [Service]
+          Restart=no
+          ExecStart=/usr/bin/docker run -v /mnt/source:/opt/source:rw --name SOURCE busybox true
+
+      - name: devenv.service
+        command: start
+        content: |
+          [Unit]
+          Description=Copy in scripts dir into /home/core/bin and add /home/core/bin to path
+          Requires=mnt-source.mount
+
+          [Service]
+          Restart=no
+          ExecStart=mkdir -p /home/core/bin; rm /home/core/.bashrc; echo "export PATH=/home/core/bin:$PATH" > /home/core/.bashrc; cp /mnt/source/docker/scripts/* /home/core/bin; chmod u+x /home/core/bin/*
+
+      - name: sshkeys.service
+        command: start
+        content: |
+          [Unit]
+          Description=Ensure the ssh files are in the right spot for sshing into containers
+          Requires=mnt-source.mount
+
+          [Service]
+          Restart=no
+          ExecStart=cp /mnt/source/docker/base/id_rsa* /home/core/.ssh/; chmod 0700 /mnt/source/docker/base/id_rsa; chmod 0644 /mnt/source/docker/base/id_rsa.pub
