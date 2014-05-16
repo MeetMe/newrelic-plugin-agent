@@ -1,2 +1,3 @@
 #!/bin/bash
-export NEWRELIC_KEY=$1
+echo "export NEWRELIC_KEY=$1" >> /home/core/.newrelic
+echo "License Key updated, run \"source ~/.newrelic\" to activate"
