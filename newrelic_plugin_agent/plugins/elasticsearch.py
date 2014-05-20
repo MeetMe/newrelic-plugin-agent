@@ -183,7 +183,7 @@ class ElasticSearch(base.JSONStatsPlugin):
             if isinstance(values[key], dict):
                 if key not in tree:
                     tree[key] = dict()
-                    self.process_tree(tree[key], values[key])
+                self.process_tree(tree[key], values[key])
             elif isinstance(values[key], int):
                 if key not in tree:
                     tree[key] = 0
