@@ -19,8 +19,7 @@ DAEMON_OPTS="-c $CONFIG"
 DESC="New Relic Plugin Agent"
 TIMEOUT=5
 PIDDIR_MODE=755
-PIDDIR_OWNER=
-PIDDIR_OWNER_FALLBACK="root"
+PIDDIR_OWNER=root
 
 # Include newrelic plugin agent defaults if available
 if [ -f /etc/default/$NAME ] ; then
@@ -48,9 +47,6 @@ check_config() {
 
 check_pid() {
   PIDDIR=$(dirname $PIDFILE)
-  if [ ! id -u $PIDDIR_OWNER > /dev/null 2>&1 ]; then
-    PIDDIR_OWNER=$PIDDIR_OWNER_FALLBACK
-  fi
   if [ ! -d $PIDDIR ]; then
     install -m $PIDDIR_MODE -o $PIDDIR_OWNER -g $PIDDIR_OWNER -d $PIDDIR
     log_action_msg "PID directory was not found and created" || true
