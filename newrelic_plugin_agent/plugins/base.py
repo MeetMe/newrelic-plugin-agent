@@ -335,16 +335,19 @@ class HTTPStatsPlugin(Plugin):
         data = self.http_get()
         return data.content if data else ''
 
-    def http_get(self):
-        """Fetch the data from the stats URL
+    def http_get(self, url=None):
+        """Fetch the data from the stats URL or a specified one.
 
+        :param str url: URL to fetch instead of the stats URL
         :rtype: requests.models.Response
 
         """
         LOGGER.debug('Polling %s Stats at %s',
-                     self.__class__.__name__, self.stats_url)
+                     self.__class__.__name__, url or self.stats_url)
+        req_kwargs = self.request_kwargs
+        req_kwargs.update({'url': url} if url else {})
         try:
-            response = requests.get(**self.request_kwargs)
+            response = requests.get(**req_kwargs)
         except requests.ConnectionError as error:
             LOGGER.error('Error polling stats: %s', error)
             return ''
