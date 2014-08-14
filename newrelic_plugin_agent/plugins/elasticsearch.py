@@ -44,7 +44,7 @@ class ElasticSearch(base.JSONStatsPlugin):
     def add_cluster_stats(self):
         """Add stats that go under Component/Cluster"""
         url = self.stats_url.replace(self.DEFAULT_PATH, '/_cluster/health')
-        response = requests.get(url)
+        response = self.http_get(url)
         if response.status_code == 200:
             data = response.json()
             self.add_gauge_value('Cluster/Nodes', 'nodes',
