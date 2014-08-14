@@ -189,21 +189,21 @@ class NewRelicPluginAgent(helper.Controller):
             if isinstance(data, list):
                 for component in data:
                     self.process_min_max_values(component)
+                    components.append(component)
                     metrics += len(component['metrics'].keys())
                     if metrics >= self.MAX_METRICS_PER_REQUEST:
                         self.send_components(components, metrics)
                         components = list()
                         metrics = 0
-                    components.append(component)
 
             elif isinstance(data, dict):
                 self.process_min_max_values(data)
+                components.append(data)
                 metrics += len(data['metrics'].keys())
                 if metrics >= self.MAX_METRICS_PER_REQUEST:
                     self.send_components(components, metrics)
                     components = list()
                     metrics = 0
-                components.append(data)
 
         LOGGER.debug('Done, will send remainder of %i metrics', metrics)
         self.send_components(components, metrics)
