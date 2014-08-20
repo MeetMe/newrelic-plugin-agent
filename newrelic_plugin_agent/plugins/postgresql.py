@@ -48,6 +48,23 @@ BGWRITER = 'SELECT * FROM pg_stat_bgwriter;'
 DATABASE = 'SELECT * FROM pg_stat_database;'
 LOCKS = 'SELECT mode, count(mode) AS count FROM pg_locks ' \
         'GROUP BY mode ORDER BY mode;'
+REPLICATION = """
+SELECT
+    client_hostname,
+    client_addr,
+    state,
+    sent_offset - (
+        replay_offset - (sent_xlog - replay_xlog) * 255 * 16 ^ 6 ) AS byte_lag
+FROM (
+    SELECT
+        client_addr, client_hostname, state,
+        ('x' || lpad(split_part(sent_location,   '/', 1), 8, '0'))::bit(32)::bigint AS sent_xlog,
+        ('x' || lpad(split_part(replay_location, '/', 1), 8, '0'))::bit(32)::bigint AS replay_xlog,
+        ('x' || lpad(split_part(sent_location,   '/', 2), 8, '0'))::bit(32)::bigint AS sent_offset,
+        ('x' || lpad(split_part(replay_location, '/', 2), 8, '0'))::bit(32)::bigint AS replay_offset
+    FROM pg_stat_replication
+) AS s;
+"""
 
 LOCK_MAP = {'AccessExclusiveLock': 'Locks/Access Exclusive',
             'AccessShareLock': 'Locks/Access Share',
@@ -73,6 +90,7 @@ class PostgreSQL(base.Plugin):
             self.add_index_stats(cursor)
             self.add_statio_stats(cursor)
             self.add_table_stats(cursor)
+        self.add_replication_stats(cursor)
         self.add_transaction_stats(cursor)
 
         # add_wal_metrics needs superuser to get directory listings
@@ -228,6 +246,13 @@ class PostgreSQL(base.Plugin):
         self.add_derive_value('Archive Status/Done', 'files',
                               temp.get('done_count', 0))
 
+    def add_replication_stats(self, cursor):
+        cursor.execute(REPLICATION)
+        temp = cursor.fetchall()
+        for row in temp:
+            self.add_gauge_value('Replication/%s' % row.get('client_addr', 'Unknown'),
+                                 'byte_lag',
+                                 int(row.get('byte_lag', 0)))
 
     def connect(self):
         """Connect to PostgreSQL, returning the connection object.
