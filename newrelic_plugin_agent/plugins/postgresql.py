@@ -56,7 +56,8 @@ LOCK_MAP = {'AccessExclusiveLock': 'Locks/Access Exclusive',
             'RowShareLock': 'Locks/Row Share',
             'ShareUpdateExclusiveLock': 'Locks/Update Exclusive Lock',
             'ShareLock': 'Locks/Share',
-            'ShareRowExclusiveLock': 'Locks/Share Row Exclusive'}
+            'ShareRowExclusiveLock': 'Locks/Share Row Exclusive',
+            'SIReadLock': 'Locks/SI Read'}
 
 
 class PostgreSQL(base.Plugin):
