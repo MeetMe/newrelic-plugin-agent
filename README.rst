@@ -30,7 +30,7 @@ The configuration file uses YAML as its format. Most tickets for non-working ins
 
 Installation Instructions
 -------------------------
-1. Install via ``pip``*:
+1. Install via ``pip`` *:
 
 ::
 
