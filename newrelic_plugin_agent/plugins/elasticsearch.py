@@ -22,6 +22,8 @@ class ElasticSearch(base.JSONStatsPlugin):
     DEFAULT_PORT = 9200
     GUID = 'com.meetme.newrelic_elasticsearch_node_agent'
 
+    STATUS_CODE = {'green': 0, 'yellow': 1, 'red': 2}
+
     def add_datapoints(self, stats):
         """Add all of the datapoints for the Elasticsearch poll
 
@@ -47,6 +49,8 @@ class ElasticSearch(base.JSONStatsPlugin):
         response = self.http_get(url)
         if response.status_code == 200:
             data = response.json()
+            self.add_gauge_value('Cluster/Status', 'level',
+                                 self.STATUS_CODE[data.get('status', 'red')])
             self.add_gauge_value('Cluster/Nodes', 'nodes',
                                  data.get('number_of_nodes', 0))
             self.add_gauge_value('Cluster/Data Nodes', 'nodes',
