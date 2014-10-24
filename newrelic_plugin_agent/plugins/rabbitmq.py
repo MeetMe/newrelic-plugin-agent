@@ -224,7 +224,7 @@ class RabbitMQ(base.Plugin):
         available, consumers, deliver, publish, redeliver, unacked = \
             0, 0, 0, 0, 0, 0
         for count, queue in enumerate(queue_data):
-            if queue['name'][0:6] == 'amq.gen':
+            if queue['name'][0:7] == 'amq.gen':
                 LOGGER.debug('Skipping auto-named queue: %s', queue['name'])
                 continue
 
