@@ -58,7 +58,7 @@ class Memcached(base.SocketStatsPlugin):
         self.command_value('Delete', 'delete', stats)
         self.command_value('Get', 'get', stats)
         self.command_value('Incr', 'incr', stats)
-        self.add_derive_value('Command/Requests/Set', '', stats['cmd_set'])
+        self.add_derive_value('Command/Requests/Set', 'requests', stats['cmd_set'])
 
         self.add_gauge_value('Connection/Count', 'connections',
                              stats['curr_connections'])
