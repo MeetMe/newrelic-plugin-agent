@@ -178,6 +178,9 @@ class Plugin(object):
         :rtype: dict
 
         """
+        if not value:
+            value = 0
+            
         if isinstance(value, basestring):
             value = 0
 
