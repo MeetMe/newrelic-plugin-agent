@@ -1,0 +1,12 @@
+[Unit]
+Description=newrelic-plugin-agent
+
+[Service]
+Type=forking
+User=newrelic
+PIDFile=/var/run/newrelic/newrelic-plugin-agent.pid
+ExecStart=/usr/bin/newrelic-plugin-agent -c /etc/newrelic/newrelic-plugin-agent.cfg
+ExecStop=/bin/kill -INT $MAINPID
+
+[Install]
+WantedBy=multi-user.target
