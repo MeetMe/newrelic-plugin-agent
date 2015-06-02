@@ -145,7 +145,7 @@ class Redis(base.SocketStatsPlugin):
         values = dict()
         for line in lines:
             if ':' in line:
-                key, value = line.strip().split(':')
+                key, value = line.strip().split(':',1)
                 if key[:2] == 'db':
                     values[key] = dict()
                     subvalues = value.split(',')
