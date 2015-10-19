@@ -1,0 +1,20 @@
+[Unit]
+Description=newrelic-plugin-agent
+
+[Service]
+Type=forking
+PrivateTmp=yes
+User=newrelic
+Group=newrelic
+PermissionsStartOnly=true
+PIDFile=/var/run/newrelic/newrelic-plugin-agent.pid
+ExecStartPre=/bin/mkdir -p /var/run/newrelic
+ExecStartPre=/bin/rm -f /var/run/newrelic/newrelic-plugin-agent.pid
+ExecStartPre=/bin/chown -R newrelic:newrelic /var/run/newrelic
+ExecStart=/usr/bin/newrelic-plugin-agent -c /etc/newrelic/newrelic-plugin-agent.cfg
+ExecStop=/bin/kill -INT $MAINPID
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+
